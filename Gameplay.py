@@ -1,5 +1,6 @@
 ''' hello, name, let's play a game '''
 from ConfigParser import SafeConfigParser
+import logging
 from py2neo import Graph
 import random
 import re
@@ -39,7 +40,9 @@ def turn(uid):
 def send_message(message):
     ''' pass the turn info to the player '''
     message = format_vars(message)
-    IO.send(message)
+    success = IO.send(message)
+    if not success:
+        LOGGER.error('Failed to send message')
 
 
 def format_options(options):
@@ -60,28 +63,35 @@ def format_vars(text):
 def pick_option(options):
     ''' determine the selected option '''
     response = IO.receive()
-    if response['valid']:
+    if response['valid'] and response['response_id'] < len(options):
         return options[response['response_id']]
     else:
-        print 'invalid response, picking at random'
+        LOGGER.warn('invalid response, picking at random')
 
     return random.choice(options)
 
+
 if __name__ == '__main__':
     GRAPH = Graph()
+
+    HANDLER = logging.StreamHandler()
+    HANDLER.setFormatter(logging.Formatter('%(levelname)s: %(message)s'))
+    LOGGER = logging.getLogger()
+    LOGGER.addHandler(HANDLER)
+    LOGGER.setLevel(logging.WARN)
 
     VARS = {}
     try:
         VARS['NAME'] = sys.argv[1]
     except IndexError:
-        print 'Please provide the player name'
+        LOGGER.error('Please provide the player name')
     else:
         PARSER = SafeConfigParser()
         PARSER.read('settings.ini')
         if PARSER.get('environment', 'debug'):
             IO = SysIO()
         else:
-            print 'no prod IO available'
+            LOGGER.warn('no prod IO available')
             IO = SysIO()
 
         start()

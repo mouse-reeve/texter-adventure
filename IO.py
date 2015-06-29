@@ -48,6 +48,7 @@ class SysIO(AbstractIO):
     ''' Uses command line input for game flow '''
     def send(self, text):
         print text
+        return {'success': True}
 
     def receive(self):
         raw_response = raw_input()
