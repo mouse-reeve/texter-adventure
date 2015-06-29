@@ -46,11 +46,12 @@ def format_options(options):
     ''' creates the options menu formatted string '''
     message = ['Please select an option: ']
     for (i, option) in enumerate(options):
-        message.append('%d) %s ' % (i+1, option['text']))
+        message.append('%s) %s ' % (chr(ord('A')+i), option['text']))
     return '\n'.join(message)
 
 
 def format_vars(text):
+    ''' replaces {FORMATTED} variables with their constant '''
     for key, value in VARS.items():
         text = re.sub('{%s}' % key, value, text)
     return text
@@ -59,14 +60,43 @@ def format_vars(text):
 def pick_option(options):
     ''' determine the selected option '''
     response = IO.receive()
-    try:
-        response = int(response) - 1
-        if response < len(options):
-            return options[response]
-    except ValueError:
+    data = clean_response(response, len(options))
+    if data['valid']:
+        return options[data['response_id']]
+    else:
         print 'invalid response, picking at random'
 
     return random.choice(options)
+
+def clean_response(text, option_count):
+    ''' try to determine what the player wants to do '''
+    data = {'valid': False, 'original': text, 'response_id': None}
+
+    text = re.sub(r'\(|\)|\.', '', text)
+
+    # Check for simple numerical response
+    try:
+        response = int(text) - 1
+        data['valid'] = True
+        data['response_id'] = response
+        return data
+    except ValueError:
+        pass
+
+    # check for alphabet response
+    if len(text) == 1:
+        data['valid'] = True
+        if ord(text) >= ord('A') and ord(text) <= ord('Z'):
+            data['response_id'] = ord(text) - ord('A')
+        elif ord(text) >= ord('a') and ord(text) <= ord('z'):
+            data['response_id'] = ord(text) - ord('a')
+        else:
+            data['valid'] = False
+
+    if data['valid'] and (data['response_id'] < 0 or data['response_id'] > option_count):
+        data['valid'] = False
+
+    return data
 
 
 if __name__ == '__main__':
@@ -76,14 +106,14 @@ if __name__ == '__main__':
     try:
         VARS['NAME'] = sys.argv[1]
     except IndexError:
-        VARS['NAME']  = "John Doe"
-
-    PARSER = SafeConfigParser()
-    PARSER.read('settings.ini')
-    if PARSER.get('environment', 'debug'):
-        IO = SysIO()
+        print 'Please provide the player name'
     else:
-        #TODO: add twilio IO
-        IO = SysIO()
+        PARSER = SafeConfigParser()
+        PARSER.read('settings.ini')
+        if PARSER.get('environment', 'debug'):
+            IO = SysIO()
+        else:
+            print 'no prod IO available'
+            IO = SysIO()
 
-    start()
+        start()
