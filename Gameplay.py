@@ -60,44 +60,12 @@ def format_vars(text):
 def pick_option(options):
     ''' determine the selected option '''
     response = IO.receive()
-    data = clean_response(response, len(options))
-    if data['valid']:
-        return options[data['response_id']]
+    if response['valid']:
+        return options[response['response_id']]
     else:
         print 'invalid response, picking at random'
 
     return random.choice(options)
-
-def clean_response(text, option_count):
-    ''' try to determine what the player wants to do '''
-    data = {'valid': False, 'original': text, 'response_id': None}
-
-    text = re.sub(r'\(|\)|\.', '', text)
-
-    # Check for simple numerical response
-    try:
-        response = int(text) - 1
-        data['valid'] = True
-        data['response_id'] = response
-        return data
-    except ValueError:
-        pass
-
-    # check for alphabet response
-    if len(text) == 1:
-        data['valid'] = True
-        if ord(text) >= ord('A') and ord(text) <= ord('Z'):
-            data['response_id'] = ord(text) - ord('A')
-        elif ord(text) >= ord('a') and ord(text) <= ord('z'):
-            data['response_id'] = ord(text) - ord('a')
-        else:
-            data['valid'] = False
-
-    if data['valid'] and (data['response_id'] < 0 or data['response_id'] > option_count):
-        data['valid'] = False
-
-    return data
-
 
 if __name__ == '__main__':
     GRAPH = Graph()
