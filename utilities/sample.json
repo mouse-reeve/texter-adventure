@@ -49,5 +49,9 @@
         "id": "WIN",
         "text": ["Now you're at a place, as you planned, it's all chill."],
         "options": []
-     }
+    }, {
+        "id": "EXIT",
+        "text": ["WHATEVER"],
+        "options": []
+    }
 ]
