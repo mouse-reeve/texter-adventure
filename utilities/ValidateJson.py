@@ -23,12 +23,17 @@ def validate(turns):
         turn_uids.append(turn['id'])
 
     for turn in FILE:
+        text = 'Please select an option: '
         for option in turn['options']:
             if not ('text' in option and 'destination' in option):
                 logging.error('fields missing from option %s', json.dumps(turn))
+            else:
+                text += 'X) %s ' % option['text']
 
             if not option['destination'] in turn_uids:
                 logging.error('unknown destination %s in turn %s', json.dumps(option), turn['id'])
+        if len(text) > 140:
+            logging.warn('Optionset for turn %s too long', turn['id'])
 
 if __name__ == '__main__':
     FILE = json.load(open(sys.argv[1], 'r'))
