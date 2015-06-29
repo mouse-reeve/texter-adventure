@@ -1,5 +1,4 @@
 ''' Creates the graph database from a properly formatted json file '''
-
 import json
 import logging
 from py2neo import Graph, Node, Relationship
