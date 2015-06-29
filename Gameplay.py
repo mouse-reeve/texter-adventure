@@ -1,4 +1,5 @@
 ''' hello, name, let's play a game '''
+from ConfigParser import SafeConfigParser
 from py2neo import Graph
 import random
 import sys
@@ -62,6 +63,18 @@ def pick_option(options):
 
 if __name__ == '__main__':
     GRAPH = Graph()
-    NAME = sys.argv[1]
-    IO = SysIO()
+
+    try:
+        NAME = sys.argv[1]
+    except IndexError:
+        NAME = "John Doe"
+
+    PARSER = SafeConfigParser()
+    PARSER.read('settings.ini')
+    if PARSER.get('environment', 'debug'):
+        IO = SysIO()
+    else:
+        #TODO: add twilio IO
+        IO = SysIO()
+
     start()
