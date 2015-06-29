@@ -2,6 +2,7 @@
 from ConfigParser import SafeConfigParser
 from py2neo import Graph
 import random
+import re
 import sys
 
 from IO import SysIO
@@ -37,6 +38,7 @@ def turn(uid):
 
 def send_message(message):
     ''' pass the turn info to the player '''
+    message = format_vars(message)
     IO.send(message)
 
 
@@ -46,6 +48,12 @@ def format_options(options):
     for (i, option) in enumerate(options):
         message.append('%d) %s ' % (i+1, option['text']))
     return '\n'.join(message)
+
+
+def format_vars(text):
+    for key, value in VARS.items():
+        text = re.sub('{%s}' % key, value, text)
+    return text
 
 
 def pick_option(options):
@@ -64,10 +72,11 @@ def pick_option(options):
 if __name__ == '__main__':
     GRAPH = Graph()
 
+    VARS = {}
     try:
-        NAME = sys.argv[1]
+        VARS['NAME'] = sys.argv[1]
     except IndexError:
-        NAME = "John Doe"
+        VARS['NAME']  = "John Doe"
 
     PARSER = SafeConfigParser()
     PARSER.read('settings.ini')
