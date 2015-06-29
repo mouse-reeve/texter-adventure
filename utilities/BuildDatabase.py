@@ -3,6 +3,7 @@
 import json
 import logging
 from py2neo import Graph, Node, Relationship
+import sys
 
 def add_turn(turn):
     ''' loads the json turn info into neo4j '''
@@ -24,7 +25,7 @@ def add_turn(turn):
 
 if __name__ == '__main__':
     GRAPH = Graph()
-    TURNS = json.load(open('game.json', 'r'))
+    TURNS = json.load(open(sys.argv[1], 'r'))
 
     # add turn and option data
     for turn_json in TURNS:
