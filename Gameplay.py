@@ -3,6 +3,8 @@ from py2neo import Graph
 import random
 import sys
 
+from IO import SysIO
+
 def start():
     ''' initualize and accesses the first turn in a game '''
     turn('START')
@@ -23,7 +25,7 @@ def turn(uid):
     optionset = []
     for option in options:
         option = option[0]
-        optionset.append(option)
+        optionset.insert(0, option)
 
     if len(options):
         send_message(format_options(optionset))
@@ -34,21 +36,32 @@ def turn(uid):
 
 def send_message(message):
     ''' pass the turn info to the player '''
-    print message
+    IO.send(message)
+
 
 def format_options(options):
+    ''' creates the options menu formatted string '''
     message = ['Please select an option: ']
     for (i, option) in enumerate(options):
         message.append('%d) %s ' % (i+1, option['text']))
     return '\n'.join(message)
 
+
 def pick_option(options):
     ''' determine the selected option '''
+    response = IO.receive()
+    try:
+        response = int(response) - 1
+        if response < len(options):
+            return options[response]
+    except ValueError:
+        print 'invalid response, picking at random'
+
     return random.choice(options)
 
 
 if __name__ == '__main__':
     GRAPH = Graph()
     NAME = sys.argv[1]
-    NUMBER = sys.argv[2]
+    IO = SysIO()
     start()
