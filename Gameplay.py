@@ -2,7 +2,6 @@
 from ConfigParser import SafeConfigParser
 import logging
 from py2neo import Graph
-import random
 import re
 import sys
 
@@ -10,31 +9,47 @@ from IO import SysIO
 
 def start():
     ''' initualize and accesses the first turn in a game '''
-    turn('START')
+    automatic_turn('START')
 
 
-def turn(uid):
-    ''' runs a turn '''
-
+def automatic_turn(uid):
+    ''' gets a turn within the known graph '''
     turns = GRAPH.cypher.execute('MATCH (t:turn) WHERE t.uid = "%s" RETURN t' % uid)
     options = GRAPH.cypher.execute('MATCH (t:turn) --> (o:option) '
                                    'WHERE t.uid = "%s" '
                                    'RETURN o' % uid)
     turn_node = turns[0][0]
-
-    for text in turn_node['text']:
-        send_message(text)
-
     optionset = []
     for option in options:
         option = option[0]
         optionset.insert(0, option)
 
-    if len(options):
-        send_message(format_options(optionset))
+    turn(turn_node['text'], optionset)
 
-        selection = pick_option(optionset)
-        turn(selection['destination'])
+
+def custom_turn(turn_data):
+    ''' runs a custom, on-the-fly generated turn '''
+    turn(turn_data['text'], turn_data['options'])
+
+
+def turn(texts, options):
+    ''' runs a turn '''
+
+    for text in texts:
+        display(text)
+        send_message(text)
+
+    if len(options):
+        options_text = format_options(options)
+        display(options_text)
+        send_message(options_text)
+
+        selection = pick_option(options)
+        if selection:
+            automatic_turn(selection['destination'])
+        else:
+            selection = custom_response()
+            custom_turn(selection)
 
 
 def send_message(message):
@@ -43,6 +58,15 @@ def send_message(message):
     success = IO.send(message)
     if not success:
         LOGGER.error('Failed to send message')
+
+
+def display(text):
+    ''' output to the terminal to track gameplay '''
+    header = '----------------[ %s ]----------------' % VARS['NAME']
+    print header
+    for line in text.split('\n'):
+        print '| %s' % line
+    print '-' * len(header)
 
 
 def format_options(options):
@@ -63,12 +87,17 @@ def format_vars(text):
 def pick_option(options):
     ''' determine the selected option '''
     response = IO.receive()
+    display(response['original'])
     if response['valid'] and response['response_id'] < len(options):
         return options[response['response_id']]
     else:
-        LOGGER.warn('invalid response, picking at random')
+        return False
 
-    return random.choice(options)
+
+def custom_response():
+    ''' GM intercedes to determine response to player '''
+    LOGGER.warn('Custom handling required')
+    return IO.get_custom()
 
 
 if __name__ == '__main__':
