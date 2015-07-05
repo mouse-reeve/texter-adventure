@@ -36,12 +36,12 @@ def turn(texts, options):
     ''' runs a turn '''
 
     for text in texts:
-        display(text)
+        LOGGER.info('sending message: %s' % text)
         send_message(text)
 
     if len(options):
         options_text = format_options(options)
-        display(options_text)
+        LOGGER.info('sending message: %s' % options_text)
         send_message(options_text)
 
         selection = pick_option(options)
@@ -58,15 +58,6 @@ def send_message(message):
     success = IO.send(message)
     if not success:
         LOGGER.error('Failed to send message')
-
-
-def display(text):
-    ''' output to the terminal to track gameplay '''
-    header = '----------------[ %s ]----------------' % VARS['NAME']
-    print header
-    for line in text.split('\n'):
-        print '| %s' % line
-    print '-' * len(header)
 
 
 def format_options(options):
@@ -87,7 +78,6 @@ def format_vars(text):
 def pick_option(options):
     ''' determine the selected option '''
     response = IO.receive()
-    display(response['original'])
     if response['valid'] and response['response_id'] < len(options):
         return options[response['response_id']]
     else:

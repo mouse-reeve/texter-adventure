@@ -51,6 +51,12 @@ class AbstractIO(object):
 class SysIO(AbstractIO):
     ''' Uses command line input for game flow '''
     def send(self, text):
+        header = '------------------------------------------'
+        print header
+        for line in text.split('\n'):
+            print '| %s' % line
+        print header
+
         return {'success': True}
 
     def receive(self):
