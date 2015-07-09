@@ -15,14 +15,15 @@ def start():
 def automatic_turn(uid):
     ''' gets a turn within the known graph '''
 
-    text = []
+    turn_data = {'text': [], 'prompt': '', 'options': [], 'uid': uid}
 
     while True:
         current = GRAPH.cypher.execute('MATCH (t:turn) WHERE t.uid = %s RETURN t' % uid)
-        text.append(current[0][0]['text'])
+        turn_data['text'].append(current[0][0]['text'])
         try:
             uid = GRAPH.cypher.execute('MATCH t --> (t2:turn) ' \
                                        'WHERE t.uid = %s RETURN t2' % uid)[0][0]['uid']
+            turn_data['uid'] = uid
         except:
             break
 
@@ -43,32 +44,40 @@ def automatic_turn(uid):
         option = option[0]
         optionset.insert(0, option)
 
-    turn(text, prompt['text'], optionset)
+    turn_data['prompt'] = prompt['text']
+    turn_data['options'] = optionset
+
+    turn(turn_data)
 
 
 def custom_turn(turn_data):
     ''' runs a custom, on-the-fly generated turn '''
-    turn(turn_data['text'], turn_data['prompt'], turn_data['options'])
+    turn(turn_data)
 
 
-def turn(texts, prompt, options):
+def error_turn(turn_data):
+    ''' game handles input it doesn't understand '''
+    turn_data['text'] = ['I didn\'t catch that. Can you give me the letter of ' \
+                         'the option you wanted?']
+    turn(turn_data)
+
+def turn(turn_data):
     ''' runs a turn '''
 
-    for text in texts:
+    for text in turn_data['text']:
         LOGGER.info('sending message: %s', text)
         send_message(text)
 
-    if len(options):
-        options_text = format_options(prompt, options)
+    if len(turn_data['options']):
+        options_text = format_options(turn_data['prompt'], turn_data['options'])
         LOGGER.info('sending message: %s', options_text)
         send_message(options_text)
 
-        selection = pick_option(options)
+        selection = pick_option(turn_data['options'])
         if selection:
             automatic_turn(selection['pointsTo'][0])
         else:
-            selection = custom_response()
-            custom_turn(selection)
+            error_turn(turn_data)
 
 
 def send_message(message):

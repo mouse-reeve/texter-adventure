@@ -43,7 +43,7 @@ class AbstractIO(object):
         ''' Get an answer from the player '''
         raise NotImplementedError()
 
-    def get_custom(self):
+    def get_custom(self, turn_data):
         ''' Game master provides a custom turn '''
         raise NotImplementedError()
 
@@ -51,21 +51,21 @@ class AbstractIO(object):
 class SysIO(AbstractIO):
     ''' Uses command line input for game flow '''
     def send(self, text):
-        header = '------------------------------------------'
-        print header
+        print '\n'
         for line in text.split('\n'):
-            print '| %s' % line
-        print header
+            print line
 
         return {'success': True}
 
     def receive(self):
+        print '\n'
         raw_response = raw_input()
         return create_response(raw_response)
 
-    def get_custom(self):
+    def get_custom(self, turn):
         return {
-            'text': ['this is a custom turn'],
+            'text': ['I didn\'t catch that. Can you give me the letter of the option you wanted?'],
+            'prompt': turn['prompt'],
             'options': [
                 {'text': 'First option', 'destination': 'EXIT'},
                 {'text': 'Second option', 'destination': None}
