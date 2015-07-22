@@ -12,10 +12,6 @@ class AbstractIO(object):
         ''' Get an answer from the player '''
         raise NotImplementedError()
 
-    def get_custom(self, turn_data):
-        ''' Game master provides a custom turn '''
-        raise NotImplementedError()
-
 
 class SysIO(AbstractIO):
     ''' Uses command line input for game flow '''
@@ -31,16 +27,6 @@ class SysIO(AbstractIO):
         raw_response = input()
         return raw_response
 
-    def get_custom(self, turn):
-        return {
-            'text': ['I didn\'t catch that. Can you give me the letter of the option you wanted?'],
-            'prompt': turn['prompt'],
-            'options': [
-                {'text': 'First option', 'destination': 'EXIT'},
-                {'text': 'Second option', 'destination': None}
-            ]
-        }
-
 
 class TwilioIO(AbstractIO):
     ''' connects to the twilio API '''
@@ -54,14 +40,3 @@ class TwilioIO(AbstractIO):
         # do nothing, wait for webhook
         time.sleep(3)
         return 'A'
-
-
-    def get_custom(self, turn):
-        return {
-            'text': ['I didn\'t catch that. Can you give me the letter of the option you wanted?'],
-            'prompt': turn['prompt'],
-            'options': [
-                {'text': 'First option', 'destination': 'EXIT'},
-                {'text': 'Second option', 'destination': None}
-            ]
-        }
