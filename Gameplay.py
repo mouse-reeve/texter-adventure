@@ -102,7 +102,7 @@ class Gameplay(object):
         if response['valid']:
             if response['response_id'] < len(turn_data['options']):
                 option = turn_data['options'][response['response_id']]
-                if 'pointsTo' in option:
+                if 'pointsTo' in option and option['pointsTo']:
                     return self.get_turn(option['pointsTo'][0])
 
         turn_data['text'] = ['I didn\'t catch that. Can you give me the letter of ' \
@@ -119,7 +119,7 @@ def format_options(prompt, options):
 
 
 def clean_response(text):
-    ''' try to determine what the player wants to do '''
+    ''' basic cleanup to guess what a player may have meant '''
     data = {'valid': False, 'original': text, 'response_id': None}
 
     text = re.sub(r'\(|\)|\.', '', text)

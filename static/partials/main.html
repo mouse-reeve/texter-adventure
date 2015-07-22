@@ -1,4 +1,30 @@
-{{ turn }}
+<div ng-if="state != 'approve'">
+    <div>
+        <p ng-repeat="text in turn.text track by $index">{{ text }}</p>
+    </div>
+    <div>
+        <p>{{ turn.prompt }}</p>
+        <ul>
+            <li ng-repeat="option in turn.options track by $index">
+                {{ option['text'] }}
+            </li>
+    </div>
+</div>
+
+<form ng-if="state == 'approve'">
+    <div>
+        <input type="text"
+               ng-repeat="text in turn.text track by $index"
+               ng-model="turn.text[$index]">
+    </div>
+    <div>
+        <input type="text" ng-model="turn.prompt">
+        <ul>
+            <li ng-repeat="option in turn.options track by $index">
+                <input type="text" ng-model="turn.options[$index]['text']">
+            </li>
+    </div>
+</form>
 
 <button ng-click="approveTurn()" ng-if="state == 'approve'">Send turn</button>
 <button ng-click="sendResponse('A')" ng-if="state == 'respond'">Pick option A</button>

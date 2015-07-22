@@ -1,3 +1,16 @@
 h2 {
     text-transform: uppercase;
 }
+
+form div {
+    padding-bottom: 1em;
+}
+
+input {
+    width: 60em;
+    display: block;
+}
+
+li input {
+    width: 20em;
+}
