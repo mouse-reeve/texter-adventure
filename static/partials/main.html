@@ -13,7 +13,7 @@
 
 <form ng-if="state == 'approve'">
     <div>
-        <input type="text"
+        <input class="turn-text" type="text"
                ng-repeat="text in turn.text track by $index"
                ng-model="turn.text[$index]">
     </div>
@@ -21,7 +21,8 @@
         <input type="text" ng-model="turn.prompt">
         <ul>
             <li ng-repeat="option in turn.options track by $index">
-                <input type="text" ng-model="turn.options[$index]['text']">
+                <input type="text" class="option" ng-model="turn.options[$index]['text']">
+                <input type="number" class="uid" ng-model="turn.options[$index]['pointsTo'][0]">
             </li>
     </div>
 </form>
