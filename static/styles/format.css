@@ -6,13 +6,13 @@ form div {
     padding-bottom: 1em;
 }
 
+input {
+    width: 20em;
+}
+
 input.turn-text {
     width: 60em;
     display: block;
-}
-
-input.option {
-    width: 20em;
 }
 
 input.uid {
