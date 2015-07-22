@@ -1,4 +1,4 @@
-angular.module('app', ['ngRoute'])
+angular.module('app', ['gameFactory', 'ngRoute'])
     .config(function ($locationProvider, $routeProvider) {
 
         $routeProvider

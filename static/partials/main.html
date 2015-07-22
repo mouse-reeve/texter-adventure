@@ -1,1 +1,4 @@
-{{ test }}
+{{ turn }}
+
+<button ng-click="approveTurn()" ng-if="state == 'approve'">Send turn</button>
+<button ng-click="sendResponse('A')" ng-if="state == 'respond'">Pick option A</button>

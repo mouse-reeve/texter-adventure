@@ -1,5 +1,5 @@
 ''' Runs a dashboard app for texter adventures '''
-from flask import Flask, make_response
+from flask import Flask, make_response, request
 import json
 
 from Gameplay import Gameplay
@@ -16,23 +16,29 @@ def index():
     ''' renders the start page '''
     return make_response(open('index.html').read())
 
+
 @APP.route('/api/start', methods=['GET'])
 def start_game():
     ''' gets the very beginning of a new game '''
     turn = GAME.start()
-    return json.dumps(turn['text'])
+    return json.dumps(turn)
 
-@APP.route('/api/send', methods=['GET'])
+
+@APP.route('/api/send', methods=['POST'])
 def send_turn():
     ''' manually send a turn, if necessary '''
-    turn = GAME.confirm_turn()
-    return json.dumps(turn['text'])
+    turn_data = request.get_json()
+    turn = GAME.send_turn(turn_data)
+    return json.dumps(turn)
 
-@APP.route('/api/choice/<turn_uid>')
-def automatic_choice(turn_id):
+
+@APP.route('/api/respond/<response>', methods=['POST'])
+def respond(response):
     ''' the user picks an automated choice with a turn UID '''
-    success = GAME.automatic_turn(turn_id)
-    return json.dumps({'success': success})
+    turn_data = request.get_json()
+    turn = GAME.process_response(turn_data, response)
+    return json.dumps(turn)
+
 
 if __name__ == '__main__':
     APP.debug = True

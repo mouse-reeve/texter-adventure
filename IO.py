@@ -1,37 +1,5 @@
 ''' The interface for performing I/O to the player '''
-import re
 import time
-
-def create_response(text):
-    ''' try to determine what the player wants to do '''
-    data = {'valid': False, 'original': text, 'response_id': None}
-
-    text = re.sub(r'\(|\)|\.', '', text)
-
-    # Check for simple numerical response
-    try:
-        response = int(text) - 1
-        data['valid'] = True
-        data['response_id'] = response
-        return data
-    except ValueError:
-        pass
-
-    # check for alphabet response
-    if len(text) == 1:
-        data['valid'] = True
-        if ord(text) >= ord('A') and ord(text) <= ord('Z'):
-            data['response_id'] = ord(text) - ord('A')
-        elif ord(text) >= ord('a') and ord(text) <= ord('z'):
-            data['response_id'] = ord(text) - ord('a')
-        else:
-            data['valid'] = False
-
-    if data['valid'] and (data['response_id'] < 0):
-        data['valid'] = False
-
-    return data
-
 
 class AbstractIO(object):
     ''' Defines basic types of communication (in and out) '''
@@ -61,7 +29,7 @@ class SysIO(AbstractIO):
     def receive(self):
         print('\n')
         raw_response = input()
-        return create_response(raw_response)
+        return raw_response
 
     def get_custom(self, turn):
         return {
@@ -83,9 +51,9 @@ class TwilioIO(AbstractIO):
 
 
     def receive(self):
-        # do nothing, wait for input
+        # do nothing, wait for webhook
         time.sleep(3)
-        return create_response('A')
+        return 'A'
 
 
     def get_custom(self, turn):

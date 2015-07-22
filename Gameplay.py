@@ -2,7 +2,6 @@
 import logging
 from py2neo import Graph
 import re
-from concurrent.futures import ThreadPoolExecutor
 
 from IO import SysIO, TwilioIO
 
@@ -13,18 +12,16 @@ class Gameplay(object):
         self.graph = Graph()
         self.params = {'NAME': 'Alice'}
         self.comms = comms()
-        self.current_turn = {}
         self.autonomous = False
 
 
     def start(self):
-        ''' initialize and accesses the first turn in a game '''
-        return self.automatic_turn(0)
+        ''' selects the entry turn for a new game '''
+        return self.get_turn(0)
 
 
-    def automatic_turn(self, uid):
-        ''' gets a turn within the known graph '''
-
+    def get_turn(self, uid):
+        ''' load the content of a known turn from the database '''
         turn_data = {'text': [], 'prompt': '', 'options': [], 'uid': uid}
 
         # get all turn text nodes
@@ -52,49 +49,34 @@ class Gameplay(object):
 
         optionset = []
         for option in options:
-            option = option[0]
-            optionset.insert(0, option)
+            option_dict = {
+                'text': option[0]['text'],
+                'pointsTo': option[0]['pointsTo'] if 'pointsTo' in option[0] else None
+            }
+            optionset.insert(0, option_dict)
 
         turn_data['prompt'] = prompt['text']
         turn_data['options'] = optionset
 
-        return self.turn(turn_data)
+        return turn_data
 
 
-    def custom_turn(self, turn_data):
-        ''' runs a custom, on-the-fly generated turn '''
-        #return self.turn(turn_data)
-
-
-    def error_turn(self, turn_data):
-        ''' game handles input it doesn't understand '''
-        turn_data['text'] = ['I didn\'t catch that. Can you give me the letter of ' \
-                             'the option you wanted?']
-        #return self.turn(turn_data)
-
-    def turn(self, turn_data):
-        ''' runs a turn '''
-        self.current_turn = turn_data
-        if self.autonomous:
-            self.confirm_turn()
-
-        return self.current_turn
-
-
-    def confirm_turn(self):
+    def send_turn(self, turn_data):
         ''' allows the system to wait on GM confirmation '''
+        turn_success = True
         # send a turn
-        for text in self.current_turn['text']:
+        for text in turn_data['text']:
             logging.info('sending message: %s', text)
-            self.send_message(text)
+            success = self.send_message(text)
+            turn_success = success if not success else turn_success
 
-        if len(self.current_turn['options']):
-            options_text = format_options(self.current_turn['prompt'], self.current_turn['options'])
+        if len(turn_data['options']):
+            options_text = format_options(turn_data['prompt'], turn_data['options'])
             logging.info('sending message: %s', options_text)
-            self.send_message(options_text)
+            success = self.send_message(options_text)
+            turn_success = success if not success else turn_success
 
-            # get the response
-            self.pick_option()
+        return turn_success
 
 
     def send_message(self, message):
@@ -104,6 +86,8 @@ class Gameplay(object):
         if not success:
             logging.error('Failed to send message')
 
+        return success
+
 
     def format_vars(self, text):
         ''' replaces {FORMATTED} variables with their constant '''
@@ -112,29 +96,18 @@ class Gameplay(object):
         return text
 
 
-    def pick_option(self):
+    def process_response(self, turn_data, selection):
         ''' determine the selected option '''
-        executor = ThreadPoolExecutor(max_workers=2)
-        return executor.submit(self.comms.receive).add_done_callback(self.response_ready)
+        response = clean_response(selection)
+        if response['valid']:
+            if response['response_id'] < len(turn_data['options']):
+                option = turn_data['options'][response['response_id']]
+                if 'pointsTo' in option:
+                    return self.get_turn(option['pointsTo'][0])
 
-
-    def response_ready(self, future):
-        ''' handles the user input '''
-        response = future.result()
-
-        options = self.current_turn['options']
-        if response['valid'] and response['response_id'] < len(options):
-            selection = options[response['response_id']]
-            if not 'pointsTo' in selection:
-                return self.custom_turn(self.comms.get_custom(self.current_turn))
-            return self.automatic_turn(selection['pointsTo'][0])
-        return self.error_turn(self.current_turn)
-
-
-    def custom_response(self):
-        ''' GM intercedes to determine response to player '''
-        logging.warn('Custom handling required')
-        return self.comms.get_custom()
+        turn_data['text'] = ['I didn\'t catch that. Can you give me the letter of ' \
+                             'the option you wanted?']
+        return turn_data
 
 
 def format_options(prompt, options):
@@ -143,6 +116,37 @@ def format_options(prompt, options):
     for (i, option) in enumerate(options):
         message.append('%s) %s ' % (chr(ord('A')+i), option['text']))
     return '\n'.join(message)
+
+
+def clean_response(text):
+    ''' try to determine what the player wants to do '''
+    data = {'valid': False, 'original': text, 'response_id': None}
+
+    text = re.sub(r'\(|\)|\.', '', text)
+
+    # Check for simple numerical response
+    try:
+        response = int(text) - 1
+        data['valid'] = True
+        data['response_id'] = response
+        return data
+    except ValueError:
+        pass
+
+    # check for alphabet response
+    if len(text) == 1:
+        data['valid'] = True
+        if ord(text) >= ord('A') and ord(text) <= ord('Z'):
+            data['response_id'] = ord(text) - ord('A')
+        elif ord(text) >= ord('a') and ord(text) <= ord('z'):
+            data['response_id'] = ord(text) - ord('a')
+        else:
+            data['valid'] = False
+
+    if data['valid'] and (data['response_id'] < 0):
+        data['valid'] = False
+
+    return data
 
 
 if __name__ == '__main__':
