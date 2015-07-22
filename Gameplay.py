@@ -14,6 +14,7 @@ class Gameplay(object):
         self.params = {'NAME': 'Alice'}
         self.comms = comms()
         self.current_turn = {}
+        self.autonomous = False
 
 
     def start(self):
@@ -74,21 +75,26 @@ class Gameplay(object):
     def turn(self, turn_data):
         ''' runs a turn '''
         self.current_turn = turn_data
+        if self.autonomous:
+            self.confirm_turn()
 
+        return self.current_turn
+
+
+    def confirm_turn(self):
+        ''' allows the system to wait on GM confirmation '''
         # send a turn
-        for text in turn_data['text']:
+        for text in self.current_turn['text']:
             logging.info('sending message: %s', text)
             self.send_message(text)
 
-        if len(turn_data['options']):
-            options_text = format_options(turn_data['prompt'], turn_data['options'])
+        if len(self.current_turn['options']):
+            options_text = format_options(self.current_turn['prompt'], self.current_turn['options'])
             logging.info('sending message: %s', options_text)
             self.send_message(options_text)
 
             # get the response
             self.pick_option()
-
-        return turn_data
 
 
     def send_message(self, message):

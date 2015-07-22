@@ -22,6 +22,12 @@ def start_game():
     turn = GAME.start()
     return json.dumps(turn['text'])
 
+@APP.route('/api/send', methods=['GET'])
+def send_turn():
+    ''' manually send a turn, if necessary '''
+    turn = GAME.confirm_turn()
+    return json.dumps(turn['text'])
+
 @APP.route('/api/choice/<turn_uid>')
 def automatic_choice(turn_id):
     ''' the user picks an automated choice with a turn UID '''
