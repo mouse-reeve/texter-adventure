@@ -18,3 +18,7 @@ input.option {
 input.uid {
     width: 5em;
 }
+
+ol {
+    list-style-type: upper-alpha;
+}
