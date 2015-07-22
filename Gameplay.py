@@ -1,91 +1,134 @@
 ''' hello, name, let's play a game '''
-from ConfigParser import SafeConfigParser
 import logging
 from py2neo import Graph
 import re
-import sys
+from concurrent.futures import ThreadPoolExecutor
 
-from IO import SysIO
+from IO import SysIO, TwilioIO
 
-def start():
-    ''' initualize and accesses the first turn in a game '''
-    automatic_turn(0)
+class Gameplay(object):
+    ''' defines the course of the game '''
+
+    def __init__(self, comms=TwilioIO):
+        self.graph = Graph()
+        self.params = {'NAME': 'Alice'}
+        self.comms = comms()
+        self.current_turn = {}
 
 
-def automatic_turn(uid):
-    ''' gets a turn within the known graph '''
+    def start(self):
+        ''' initialize and accesses the first turn in a game '''
+        return self.automatic_turn(0)
 
-    turn_data = {'text': [], 'prompt': '', 'options': [], 'uid': uid}
 
-    while True:
-        current = GRAPH.cypher.execute('MATCH (t:turn) WHERE t.uid = %s RETURN t' % uid)
-        turn_data['text'].append(current[0][0]['text'])
+    def automatic_turn(self, uid):
+        ''' gets a turn within the known graph '''
+
+        turn_data = {'text': [], 'prompt': '', 'options': [], 'uid': uid}
+
+        # get all turn text nodes
+        while True:
+            current = self.graph.cypher.execute('MATCH (t:turn) WHERE t.uid = %s RETURN t' % uid)
+            turn_data['text'].append(current[0][0]['text'])
+            try:
+                uid = self.graph.cypher.execute('MATCH t --> (t2:turn) ' \
+                                           'WHERE t.uid = %s RETURN t2' % uid)[0][0]['uid']
+                turn_data['uid'] = uid
+            except IndexError:
+                break
+
+        prompt = self.graph.cypher.execute('MATCH (t:turn) --> (p:prompt) '
+                                           'WHERE t.uid = %s '
+                                           'RETURN p' % uid)
         try:
-            uid = GRAPH.cypher.execute('MATCH t --> (t2:turn) ' \
-                                       'WHERE t.uid = %s RETURN t2' % uid)[0][0]['uid']
-            turn_data['uid'] = uid
-        except:
-            break
+            prompt = prompt[0][0]
+            options = self.graph.cypher.execute('MATCH (p:prompt) --> (o:option) '
+                                                'WHERE p.uid = %s '
+                                                'RETURN o' % prompt['uid'])
+        except IndexError:
+            prompt = {'text': ''}
+            options = []
 
-    prompt = GRAPH.cypher.execute('MATCH (t:turn) --> (p:prompt) '
-                                  'WHERE t.uid = %s '
-                                  'RETURN p' % uid)
-    try:
-        prompt = prompt[0][0]
-        options = GRAPH.cypher.execute('MATCH (p:prompt) --> (o:option) '
-                                       'WHERE p.uid = %s '
-                                       'RETURN o' % prompt['uid'])
-    except:
-        prompt = {'text': ''}
-        options = []
+        optionset = []
+        for option in options:
+            option = option[0]
+            optionset.insert(0, option)
 
-    optionset = []
-    for option in options:
-        option = option[0]
-        optionset.insert(0, option)
+        turn_data['prompt'] = prompt['text']
+        turn_data['options'] = optionset
 
-    turn_data['prompt'] = prompt['text']
-    turn_data['options'] = optionset
-
-    turn(turn_data)
+        return self.turn(turn_data)
 
 
-def custom_turn(turn_data):
-    ''' runs a custom, on-the-fly generated turn '''
-    turn(turn_data)
+    def custom_turn(self, turn_data):
+        ''' runs a custom, on-the-fly generated turn '''
+        #return self.turn(turn_data)
 
 
-def error_turn(turn_data):
-    ''' game handles input it doesn't understand '''
-    turn_data['text'] = ['I didn\'t catch that. Can you give me the letter of ' \
-                         'the option you wanted?']
-    turn(turn_data)
+    def error_turn(self, turn_data):
+        ''' game handles input it doesn't understand '''
+        turn_data['text'] = ['I didn\'t catch that. Can you give me the letter of ' \
+                             'the option you wanted?']
+        #return self.turn(turn_data)
 
-def turn(turn_data):
-    ''' runs a turn '''
+    def turn(self, turn_data):
+        ''' runs a turn '''
+        self.current_turn = turn_data
 
-    for text in turn_data['text']:
-        LOGGER.info('sending message: %s', text)
-        send_message(text)
+        # send a turn
+        for text in turn_data['text']:
+            logging.info('sending message: %s', text)
+            self.send_message(text)
 
-    if len(turn_data['options']):
-        options_text = format_options(turn_data['prompt'], turn_data['options'])
-        LOGGER.info('sending message: %s', options_text)
-        send_message(options_text)
+        if len(turn_data['options']):
+            options_text = format_options(turn_data['prompt'], turn_data['options'])
+            logging.info('sending message: %s', options_text)
+            self.send_message(options_text)
 
-        selection = pick_option(turn_data['options'])
-        if selection:
-            automatic_turn(selection['pointsTo'][0])
-        else:
-            error_turn(turn_data)
+            # get the response
+            self.pick_option()
+
+        return turn_data
 
 
-def send_message(message):
-    ''' pass the turn info to the player '''
-    message = format_vars(message)
-    success = IO.send(message)
-    if not success:
-        LOGGER.error('Failed to send message')
+    def send_message(self, message):
+        ''' pass the turn info to the player '''
+        message = self.format_vars(message)
+        success = self.comms.send(message)
+        if not success:
+            logging.error('Failed to send message')
+
+
+    def format_vars(self, text):
+        ''' replaces {FORMATTED} variables with their constant '''
+        for key, value in self.params.items():
+            text = re.sub('{%s}' % key, value, text)
+        return text
+
+
+    def pick_option(self):
+        ''' determine the selected option '''
+        executor = ThreadPoolExecutor(max_workers=2)
+        return executor.submit(self.comms.receive).add_done_callback(self.response_ready)
+
+
+    def response_ready(self, future):
+        ''' handles the user input '''
+        response = future.result()
+
+        options = self.current_turn['options']
+        if response['valid'] and response['response_id'] < len(options):
+            selection = options[response['response_id']]
+            if not 'pointsTo' in selection:
+                return self.custom_turn(self.comms.get_custom(self.current_turn))
+            return self.automatic_turn(selection['pointsTo'][0])
+        return self.error_turn(self.current_turn)
+
+
+    def custom_response(self):
+        ''' GM intercedes to determine response to player '''
+        logging.warn('Custom handling required')
+        return self.comms.get_custom()
 
 
 def format_options(prompt, options):
@@ -96,49 +139,6 @@ def format_options(prompt, options):
     return '\n'.join(message)
 
 
-def format_vars(text):
-    ''' replaces {FORMATTED} variables with their constant '''
-    for key, value in VARS.items():
-        text = re.sub('{%s}' % key, value, text)
-    return text
-
-
-def pick_option(options):
-    ''' determine the selected option '''
-    response = IO.receive()
-    if response['valid'] and response['response_id'] < len(options):
-        return options[response['response_id']]
-    else:
-        return False
-
-
-def custom_response():
-    ''' GM intercedes to determine response to player '''
-    LOGGER.warn('Custom handling required')
-    return IO.get_custom()
-
-
 if __name__ == '__main__':
-    GRAPH = Graph()
-
-    HANDLER = logging.StreamHandler()
-    HANDLER.setFormatter(logging.Formatter('%(levelname)s: %(message)s'))
-    LOGGER = logging.getLogger()
-    LOGGER.addHandler(HANDLER)
-    LOGGER.setLevel(logging.WARN)
-
-    VARS = {}
-    try:
-        VARS['NAME'] = sys.argv[1]
-    except IndexError:
-        LOGGER.error('Please provide the player name')
-    else:
-        PARSER = SafeConfigParser()
-        PARSER.read('settings.ini')
-        if PARSER.get('environment', 'debug'):
-            IO = SysIO()
-        else:
-            LOGGER.warn('no prod IO available')
-            IO = SysIO()
-
-        start()
+    GAME = Gameplay(SysIO)
+    GAME.start()

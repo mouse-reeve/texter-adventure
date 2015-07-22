@@ -1,5 +1,6 @@
 ''' The interface for performing I/O to the player '''
 import re
+import time
 
 def create_response(text):
     ''' try to determine what the player wants to do '''
@@ -51,15 +52,15 @@ class AbstractIO(object):
 class SysIO(AbstractIO):
     ''' Uses command line input for game flow '''
     def send(self, text):
-        print '\n'
+        print('\n')
         for line in text.split('\n'):
-            print line
+            print(line)
 
         return {'success': True}
 
     def receive(self):
-        print '\n'
-        raw_response = raw_input()
+        print('\n')
+        raw_response = input()
         return create_response(raw_response)
 
     def get_custom(self, turn):
@@ -72,3 +73,27 @@ class SysIO(AbstractIO):
             ]
         }
 
+
+class TwilioIO(AbstractIO):
+    ''' connects to the twilio API '''
+
+    def send(self, text):
+        print(text)
+        return {'success': True}
+
+
+    def receive(self):
+        # do nothing, wait for input
+        time.sleep(3)
+        return create_response('A')
+
+
+    def get_custom(self, turn):
+        return {
+            'text': ['I didn\'t catch that. Can you give me the letter of the option you wanted?'],
+            'prompt': turn['prompt'],
+            'options': [
+                {'text': 'First option', 'destination': 'EXIT'},
+                {'text': 'Second option', 'destination': None}
+            ]
+        }
