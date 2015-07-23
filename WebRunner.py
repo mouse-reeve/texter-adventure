@@ -11,7 +11,6 @@ DEBUG = True
 APP = Flask(__name__)
 
 GAME = Gameplay()
-
 TWILIO = TwilioIO()
 
 # ROUTES
@@ -47,7 +46,7 @@ def send_turn():
     return json.dumps(queue)
 
 
-@APP.route('/api/respond/<response>', methods=['POST'])
+@APP.route('/api/respond', methods=['POST'])
 def respond(response):
     ''' the user picks an automated choice with a turn UID '''
     turn_data = request.get_json()
