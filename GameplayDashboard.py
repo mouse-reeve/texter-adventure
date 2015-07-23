@@ -1,14 +1,18 @@
 ''' Runs a dashboard app for texter adventures '''
 from flask import Flask, make_response, request
 import json
+import logging
 
 from Gameplay import Gameplay
+from IO import TwilioIO
 
 # CONFIG
 DEBUG = True
 APP = Flask(__name__)
 
 GAME = Gameplay()
+
+TWILIO = TwilioIO()
 
 # ROUTES
 @APP.route('/')
@@ -28,8 +32,19 @@ def start_game():
 def send_turn():
     ''' manually send a turn, if necessary '''
     turn_data = request.get_json()
-    turn = GAME.send_turn(turn_data)
-    return json.dumps(turn)
+
+    queue = []
+    # send a turn
+    for text in turn_data['text']:
+        logging.info('sending message: %s', text)
+        queue.append(TWILIO.send(text, '+15005550006'))
+
+    if len(turn_data['options']):
+        options_text = GAME.format_options(turn_data)
+        logging.info('sending message: %s', options_text)
+        queue.append(TWILIO.send(options_text, '+15005550006'))
+
+    return json.dumps(queue)
 
 
 @APP.route('/api/respond/<response>', methods=['POST'])

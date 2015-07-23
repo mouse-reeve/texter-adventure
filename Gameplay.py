@@ -1,17 +1,13 @@
 ''' hello, name, let's play a game '''
-import logging
 from py2neo import Graph
 import re
-
-from IO import SysIO, TwilioIO
 
 class Gameplay(object):
     ''' defines the course of the game '''
 
-    def __init__(self, comms=TwilioIO):
+    def __init__(self):
         self.graph = Graph()
         self.params = {'NAME': 'Alice'}
-        self.comms = comms()
         self.autonomous = False
 
 
@@ -27,7 +23,8 @@ class Gameplay(object):
         # get all turn text nodes
         while True:
             current = self.graph.cypher.execute('MATCH (t:turn) WHERE t.uid = %s RETURN t' % uid)
-            turn_data['text'].append(current[0][0]['text'])
+            text = self.format_vars(current[0][0]['text'])
+            turn_data['text'].append(text)
             try:
                 uid = self.graph.cypher.execute('MATCH t --> (t2:turn) ' \
                                            'WHERE t.uid = %s RETURN t2' % uid)[0][0]['uid']
@@ -61,34 +58,6 @@ class Gameplay(object):
         return turn_data
 
 
-    def send_turn(self, turn_data):
-        ''' allows the system to wait on GM confirmation '''
-        turn_success = True
-        # send a turn
-        for text in turn_data['text']:
-            logging.info('sending message: %s', text)
-            success = self.send_message(text)
-            turn_success = success if not success else turn_success
-
-        if len(turn_data['options']):
-            options_text = format_options(turn_data['prompt'], turn_data['options'])
-            logging.info('sending message: %s', options_text)
-            success = self.send_message(options_text)
-            turn_success = success if not success else turn_success
-
-        return turn_success
-
-
-    def send_message(self, message):
-        ''' pass the turn info to the player '''
-        message = self.format_vars(message)
-        success = self.comms.send(message)
-        if not success:
-            logging.error('Failed to send message')
-
-        return success
-
-
     def format_vars(self, text):
         ''' replaces {FORMATTED} variables with their constant '''
         for key, value in self.params.items():
@@ -110,12 +79,15 @@ class Gameplay(object):
         return turn_data
 
 
-def format_options(prompt, options):
-    ''' creates the options menu formatted string '''
-    message = [prompt]
-    for (i, option) in enumerate(options):
-        message.append('%s) %s ' % (chr(ord('A')+i), option['text']))
-    return '\n'.join(message)
+    def format_options(self, turn_data):
+        ''' creates the options menu formatted string '''
+        prompt = turn_data['prompt']
+        options = turn_data['options']
+        message = [prompt]
+        for (i, option) in enumerate(options):
+            text = self.format_vars(option['text'])
+            message.append('%s) %s ' % (chr(ord('A')+i), text))
+        return '\n'.join(message)
 
 
 def clean_response(text):
@@ -150,5 +122,5 @@ def clean_response(text):
 
 
 if __name__ == '__main__':
-    GAME = Gameplay(SysIO)
+    GAME = Gameplay()
     GAME.start()

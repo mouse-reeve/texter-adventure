@@ -8,3 +8,6 @@ pip-selfcheck.json
 bin/
 include/
 lib/
+
+dev-settings.ini
+prod-settings.ini
