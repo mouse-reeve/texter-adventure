@@ -15,6 +15,7 @@ class Player(db.Model):
     def __init__(self, name, number):
         self.name = name
         self.phone = number
+        self.turn_history = []
 
     def __repr__(self):
         return '<id {}>'.format(self.id)

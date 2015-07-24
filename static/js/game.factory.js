@@ -6,8 +6,8 @@ angular.module('gameFactory', []).factory('Game', function($http) {
             });
         },
 
-        sendTurn: function(turnData) {
-            return $http.post('/api/send', turnData).then(function(response) {
+        sendTurn: function(turnData, phone) {
+            return $http.post('/api/send/' + phone, turnData).then(function(response) {
                 return response.data;
             });
         },

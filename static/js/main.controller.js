@@ -6,7 +6,7 @@ function MainController($scope, Game) {
     });
 
     $scope.approveTurn = function () {
-        Game.sendTurn($scope.turn);
+        Game.sendTurn($scope.turn, '15005550006');
         $scope.state = 'respond';
     };
 
