@@ -1,5 +1,6 @@
 ''' Runs a dashboard app for texter adventures '''
 from flask import Flask, make_response, request
+from flask.ext.sqlalchemy import SQLAlchemy
 import json
 import logging
 
@@ -7,27 +8,35 @@ from Gameplay import Gameplay
 from IO import TwilioIO
 
 # CONFIG
-DEBUG = True
-APP = Flask(__name__)
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://localhost/texter_dev'
+db = SQLAlchemy(app)
+
+import models
 
 GAME = Gameplay()
 TWILIO = TwilioIO()
 
 # ROUTES
-@APP.route('/')
+@app.route('/')
 def index():
     ''' renders the start page '''
     return make_response(open('index.html').read())
 
 
-@APP.route('/api/start', methods=['GET'])
-def start_game():
+@app.route('/api/start/<name>/<phone_number>', methods=['GET'])
+def start_game(name, phone_number):
     ''' gets the very beginning of a new game '''
+    # lookup or create new player
+    phone_number = int(phone_number)
+    player = models.Player(name, phone_number)
+    db.session.add(player)
+    db.session.commit()
     turn = GAME.start()
     return json.dumps(turn)
 
 
-@APP.route('/api/send', methods=['POST'])
+@app.route('/api/send', methods=['POST'])
 def send_turn():
     ''' manually send a turn, if necessary '''
     turn_data = request.get_json()
@@ -46,7 +55,7 @@ def send_turn():
     return json.dumps(queue)
 
 
-@APP.route('/api/respond', methods=['POST'])
+@app.route('/api/respond', methods=['POST'])
 def respond(response):
     ''' the user picks an automated choice with a turn UID '''
     turn_data = request.get_json()
@@ -55,6 +64,6 @@ def respond(response):
 
 
 if __name__ == '__main__':
-    APP.debug = True
-    APP.run(port=4000)
+    app.debug = True
+    app.run(port=4000)
 

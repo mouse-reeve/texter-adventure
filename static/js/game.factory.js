@@ -1,7 +1,7 @@
 angular.module('gameFactory', []).factory('Game', function($http) {
     return {
-        startGame: function() {
-            return $http.get('/api/start').then(function(response) {
+        startGame: function(name, phone) {
+            return $http.get('/api/start/' + name + '/' + phone).then(function(response) {
                 return response.data;
             });
         },

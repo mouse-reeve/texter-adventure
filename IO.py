@@ -56,6 +56,7 @@ class TwilioIO(AbstractIO):
             except KeyError:
                 logging.error('Missing auth_sid or auth_token in twilio config')
 
+
     def send(self, text, recipient):
         if not self.client:
             logging.error('Twilio client not found')

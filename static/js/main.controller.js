@@ -1,6 +1,6 @@
 function MainController($scope, Game) {
     $scope.state = 'waiting';
-    Game.startGame().then(function(turn) {
+    Game.startGame('Alice', '15005550006').then(function(turn) {
         $scope.turn = turn;
         $scope.state = 'approve';
     });
