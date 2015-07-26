@@ -12,8 +12,10 @@ angular.module('gameFactory', []).factory('Game', function($http) {
             });
         },
 
-        sendResponse: function(option, turnData) {
-            return $http.post('/api/respond/' + option, turnData).then(function(response) {
+        // for test only
+        sendResponse: function(option) {
+            var smsData = {'Body': 'A', 'From': '15005550006'};
+            return $http.post('/api/respond', smsData).then(function(response) {
                 return response.data;
             });
         },

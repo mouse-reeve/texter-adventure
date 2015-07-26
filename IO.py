@@ -58,10 +58,12 @@ class TwilioIO(AbstractIO):
 
 
     def send(self, text, recipient):
-        if not self.client:
+        try:
+            message = self.client.messages.create(body=text, to=recipient, from_=self.sender)
+        except AttributeError:
             logging.error('Twilio client not found')
             return False
-        message = self.client.messages.create(body=text, to=recipient, from_=self.sender)
+
         logging.info('Sent message to recipient %s: %s', recipient, text)
         message = {
             'date_updated': message.date_updated.isoformat() if message.date_updated else '',
@@ -78,5 +80,4 @@ class TwilioIO(AbstractIO):
 
 
     def receive(self):
-        time.sleep(3)
         return 'A'

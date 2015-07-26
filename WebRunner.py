@@ -37,8 +37,6 @@ def start_game(name, phone_number):
         db.session.commit()
 
     turn = GAME.start()
-    player.current_turn = turn
-    db.session.commit()
     return json.dumps(turn)
 
 
@@ -62,20 +60,26 @@ def send_turn(phone_number):
         logging.info('sending message: %s', options_text)
         queue.append(TWILIO.send(options_text, '+%s' % player.phone))
 
-    player.turn_history = player.turn_history.append(turn_data) \
-                          if player.turn_history else [turn_data]
-    db.session.commit()
+    update_turn_log(player, turn_data)
 
     return json.dumps(queue)
 
 
 @app.route('/api/respond', methods=['POST'])
-def respond(response):
-    ''' the user picks an automated choice with a turn UID '''
-    turn_data = request.get_json()
-    turn = GAME.process_response(turn_data, response)
+def respond():
+    ''' receives a reply from twilio '''
+    sms = request.get_json()
+    player = db.session.query(models.Player).filter(models.Player.phone == sms['From']).one()
+    turn_data = player.current_turn
+    turn = GAME.process_response(turn_data, sms['Body'])
     return json.dumps(turn)
 
+
+def update_turn_log(player, turn_data):
+    player.current_turn = turn_data
+    player.turn_history = player.turn_history.append(turn_data) \
+                          if player.turn_history else [turn_data]
+    db.session.commit()
 
 if __name__ == '__main__':
     app.debug = True
