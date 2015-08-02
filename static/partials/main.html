@@ -1,33 +1,55 @@
-<div ng-if="state != 'approve'">
-    <div>
-        <p ng-repeat="text in turn.text track by $index">{{ text }}</p>
-    </div>
-    <div>
-        <p>{{ turn.prompt }}</p>
-        <ol>
-            <li ng-repeat="option in turn.options track by $index">
-                {{ option['text'] }}
-            </li>
-        </ol>
+<div class="history">
+    <div ng-repeat="historical_turn in history">
+        <div ng-if="historical_turn.type == 'turn'">
+            {{historical_turn}}
+            <div>
+                <p ng-repeat="text in historical_turn.content.text track by $index">{{ text }}</p>
+            </div>
+            <div>
+                <p>{{ historical_turn.content.prompt }}</p>
+                <ol>
+                    <li ng-repeat="option in historical_turn.content.options track by $index">
+                        {{ option['text'] }}
+                    </li>
+                </ol>
+            </div>
+        </div>
+        <div>hi</div>
     </div>
 </div>
-
-<form ng-if="state == 'approve'">
-    <div>
-        <input class="turn-text" type="text"
-               ng-repeat="text in turn.text track by $index"
-               ng-model="turn.text[$index]">
+current
+<div class="current">
+    <div ng-if="state != 'approve'">
+        <div>
+            <p ng-repeat="text in turn.text track by $index">{{ text }}</p>
+        </div>
+        <div>
+            <p>{{ turn.prompt }}</p>
+            <ol>
+                <li ng-repeat="option in turn.options track by $index">
+                    {{ option['text'] }}
+                </li>
+            </ol>
+        </div>
     </div>
-    <div>
-        <input type="text" ng-model="turn.prompt">
-        <ol>
-            <li ng-repeat="option in turn.options track by $index">
-                <input type="text" class="option" ng-model="turn.options[$index]['text']">
-                <input type="number" class="uid" ng-model="turn.options[$index]['pointsTo'][0]">
-            </li>
-        </ol>
-    </div>
-</form>
 
-<button ng-click="approveTurn()" ng-if="state == 'approve'">Send turn</button>
-<button ng-click="sendResponse('A')" ng-if="state == 'respond'">Pick option A</button>
+    <form ng-if="state == 'approve'">
+        <div>
+            <input class="turn-text" type="text"
+                   ng-repeat="text in turn.text track by $index"
+                   ng-model="turn.text[$index]">
+        </div>
+        <div>
+            <input type="text" ng-model="turn.prompt">
+            <ol>
+                <li ng-repeat="option in turn.options track by $index">
+                    <input type="text" class="option" ng-model="turn.options[$index]['text']">
+                    <input type="number" class="uid" ng-model="turn.options[$index]['pointsTo'][0]">
+                </li>
+            </ol>
+        </div>
+    </form>
+
+    <button ng-click="approveTurn()" ng-if="state == 'approve'">Send turn</button>
+    <button ng-click="sendResponse('A')" ng-if="state == 'respond'">Pick option A</button>
+</div>

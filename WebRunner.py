@@ -30,7 +30,7 @@ def start_game(name, phone_number):
     ''' gets the very beginning of a new game '''
     # lookup or create new player
     try:
-        player = db.session.query(models.Player).filter(models.Player.phone == phone_number).one()
+        player = find_player(phone_number)
     except NoResultFound:
         player = models.Player(name, int(phone_number))
         db.session.add(player)
@@ -45,7 +45,7 @@ def send_turn(phone_number):
     ''' manually send a turn, if necessary '''
     turn_data = request.get_json()
     try:
-        player = db.session.query(models.Player).filter(models.Player.phone == phone_number).one()
+        player = find_player(phone_number)
     except NoResultFound:
         return False
 
@@ -69,16 +69,32 @@ def send_turn(phone_number):
 def respond():
     ''' receives a reply from twilio '''
     sms = request.get_json()
-    player = db.session.query(models.Player).filter(models.Player.phone == sms['From']).one()
+    player = find_player(sms['From'])
     turn_data = player.current_turn
+    update_turn_log(player, sms, response=True)
+
     turn = GAME.process_response(turn_data, sms['Body'])
     return json.dumps(turn)
 
 
-def update_turn_log(player, turn_data):
-    player.current_turn = turn_data
-    player.turn_history = player.turn_history.append(turn_data) \
-                          if player.turn_history else [turn_data]
+@app.route('/api/history/<phone_number>', methods=['GET'])
+def history(phone_number):
+    player = find_player(phone_number)
+    return json.dumps(player.turn_history)
+
+
+def find_player(phone_number):
+    return db.session.query(models.Player).filter(models.Player.phone == phone_number).one()
+
+
+def update_turn_log(player, turn_data, response=False):
+    turn_type = 'response'
+    if not response:
+        turn_type = 'turn'
+        player.current_turn = turn_data
+    history = player.turn_history[:]
+    history.append({'type': turn_type, 'content': turn_data})
+    player.turn_history = history
     db.session.commit()
 
 if __name__ == '__main__':

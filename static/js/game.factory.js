@@ -12,6 +12,12 @@ angular.module('gameFactory', []).factory('Game', function($http) {
             });
         },
 
+        getHistory: function(phone) {
+            return $http.get('/api/history/' + phone).then(function(response) {
+                return response;
+            });
+        },
+
         // for test only
         sendResponse: function(option) {
             var smsData = {'Body': 'A', 'From': '15005550006'};
