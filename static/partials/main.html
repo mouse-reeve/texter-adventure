@@ -1,7 +1,6 @@
 <div class="history">
     <div ng-repeat="historical_turn in history">
         <div ng-if="historical_turn.type == 'turn'">
-            {{historical_turn}}
             <div>
                 <p ng-repeat="text in historical_turn.content.text track by $index">{{ text }}</p>
             </div>
@@ -14,25 +13,10 @@
                 </ol>
             </div>
         </div>
-        <div>hi</div>
     </div>
 </div>
 current
 <div class="current">
-    <div ng-if="state != 'approve'">
-        <div>
-            <p ng-repeat="text in turn.text track by $index">{{ text }}</p>
-        </div>
-        <div>
-            <p>{{ turn.prompt }}</p>
-            <ol>
-                <li ng-repeat="option in turn.options track by $index">
-                    {{ option['text'] }}
-                </li>
-            </ol>
-        </div>
-    </div>
-
     <form ng-if="state == 'approve'">
         <div>
             <input class="turn-text" type="text"
