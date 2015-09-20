@@ -28,7 +28,7 @@ ol {
     list-style-type: upper-alpha;
 }
 
-.game {
+.game, .start-game {
     float: left;
     width: 25em;
 }
@@ -66,4 +66,8 @@ header {
 .text p {
     margin: 0;
     padding: 0;
+}
+
+.start-game label {
+    display: block;
 }

@@ -30,15 +30,15 @@
             <form ng-if="state[game.phone] == 'approve'">
                 <div class="text">
                     <textarea class="turn-text"
-                           ng-repeat="text in turn.text track by $index"
-                           ng-model="turn.text[$index]"></textarea>
+                           ng-repeat="text in turn[game.phone].text track by $index"
+                           ng-model="turn[game.phone].text[$index]"></textarea>
                 </div>
                 <div class="text">
-                    <input type="text" ng-model="turn.prompt">
+                    <input type="text" ng-model="turn[game.phone].prompt">
                     <ol>
-                        <li ng-repeat="option in turn.options track by $index">
-                            <input type="text" class="option" ng-model="turn.options[$index]['text']">
-                            <input type="number" class="uid" ng-model="turn.options[$index]['pointsTo'][0]">
+                        <li ng-repeat="option in turn[game.phone].options track by $index">
+                            <input type="text" class="option" ng-model="turn[game.phone].options[$index]['text']">
+                            <input type="number" class="uid" ng-model="turn[game.phone].options[$index]['pointsTo'][0]">
                         </li>
                     </ol>
                 </div>
@@ -48,4 +48,12 @@
             <button ng-click="sendResponse('A', game.phone)" ng-if="state[game.phone] == 'respond'">Pick option A</button>
         </div>
     </div>
+</div>
+
+<div class="start-game">
+    <form>
+        <label>Name <input type="text" ng-model="startNew.name"></label>
+        <label>Phone <input type="text" ng-model="startNew.phone"></label>
+        <button ng-click="newGame()" ng-disabled="!startNew.name || !startNew.phone">Start new game</button>
+    </form>
 </div>

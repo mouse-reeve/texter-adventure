@@ -19,8 +19,8 @@ angular.module('gameFactory', []).factory('Game', function($http) {
         },
 
         // for test only
-        sendResponse: function(option) {
-            var smsData = {'Body': 'A', 'From': '15005550006'};
+        sendResponse: function(option, phone) {
+            var smsData = {'Body': 'A', 'From': phone};
             return $http.post('/api/respond', smsData).then(function(response) {
                 return response.data;
             });
