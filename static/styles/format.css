@@ -33,6 +33,11 @@ ol {
     width: 25em;
 }
 
+header {
+    text-align: center;
+    font-weight: bold;
+}
+
 .history {
     height: 35em;
     overflow: scroll;

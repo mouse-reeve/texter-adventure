@@ -1,11 +1,11 @@
 function MainController($scope, Game) {
-    $scope.state = 'waiting';
+    $scope.state = {};
     $scope.games = {};
 
     $scope.newGame = function () {
         Game.startNewGame('Alice', '15005550006').then(function(turn) {
             $scope.turn = turn;
-            $scope.state = 'approve';
+            $scope.state['15005550006'] = 'approve';
             updateHistory('15005550006');
         });
     };
@@ -14,13 +14,13 @@ function MainController($scope, Game) {
         Game.sendTurn($scope.turn, phone).then(function () {
             updateHistory(phone);
         });
-        $scope.state = 'respond';
+        $scope.state[phone] = 'respond';
     };
 
     $scope.sendResponse = function(option, phone) {
         Game.sendResponse(option, $scope.turn).then(function(turn) {
             $scope.turn = turn;
-            $scope.state = 'approve';
+            $scope.state[phone] = 'approve';
             updateHistory(phone);
         });
     };
@@ -28,6 +28,10 @@ function MainController($scope, Game) {
     var updateHistory = function(phone) {
         Game.getGames().then(function(data) {
             $scope.games = data;
+
+            angular.forEach($scope.games, function (game) {
+                $scope.state[game.phone] = 'respond';
+            });
         });
     };
 

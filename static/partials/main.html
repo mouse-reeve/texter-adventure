@@ -1,7 +1,7 @@
 <div class="game" ng-repeat="game in games track by $index">
-    <div class="title">
+    <header class="title">
         {{game.name}}, {{game.phone}}
-    </div>
+    </header>
     <div class="history">
         <div ng-repeat="historical_turn in game.turn_history" class="card">
             <div ng-if="historical_turn.type == 'turn'">
@@ -27,7 +27,7 @@
 
     <div class="current">
         <div class="card">
-            <form ng-if="state == 'approve'">
+            <form ng-if="state[game.phone] == 'approve'">
                 <div class="text">
                     <textarea class="turn-text"
                            ng-repeat="text in turn.text track by $index"
@@ -44,8 +44,8 @@
                 </div>
             </form>
 
-            <button ng-click="approveTurn(game.phone)" ng-if="state == 'approve'">Send turn</button>
-            <button ng-click="sendResponse('A', game.phone)" ng-if="state == 'respond'">Pick option A</button>
+            <button ng-click="approveTurn(game.phone)" ng-if="state[game.phone] == 'approve'">Send turn</button>
+            <button ng-click="sendResponse('A', game.phone)" ng-if="state[game.phone] == 'respond'">Pick option A</button>
         </div>
     </div>
 </div>
