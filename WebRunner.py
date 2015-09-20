@@ -36,7 +36,7 @@ def start_game(name, phone_number):
         db.session.add(player)
         db.session.commit()
 
-    turn = GAME.start()
+    turn = GAME.start(player.name)
     player.current_turn = turn;
     db.session.commit()
     return json.dumps(turn)
@@ -58,7 +58,7 @@ def send_turn(phone_number):
         queue.append(TWILIO.send(text, '+%s' % player.phone))
 
     if len(turn_data['options']):
-        options_text = GAME.format_options(turn_data)
+        options_text = GAME.format_options(turn_data, player.name)
         logging.info('sending message: %s', options_text)
         queue.append(TWILIO.send(options_text, '+%s' % player.phone))
 
@@ -75,7 +75,9 @@ def respond():
     turn_data = player.current_turn
     update_turn_log(player, sms, response=True)
 
-    turn = GAME.process_response(turn_data, sms['Body'])
+    turn = GAME.process_response(turn_data, sms['Body'], player.name)
+    player.current_turn = turn
+    db.session.commit()
     return json.dumps(turn)
 
 

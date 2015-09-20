@@ -7,23 +7,22 @@ class Gameplay(object):
 
     def __init__(self):
         self.graph = Graph()
-        self.params = {'NAME': 'Alice'}
         self.autonomous = False
 
 
-    def start(self):
+    def start(self, name='dear'):
         ''' selects the entry turn for a new game '''
-        return self.get_turn(0)
+        return self.get_turn(0, name)
 
 
-    def get_turn(self, uid):
+    def get_turn(self, uid, name='dear'):
         ''' load the content of a known turn from the database '''
         turn_data = {'text': [], 'prompt': '', 'options': [], 'uid': uid}
 
         # get all turn text nodes
         while True:
             current = self.graph.cypher.execute('MATCH (t:turn) WHERE t.uid = %s RETURN t' % uid)
-            text = self.format_vars(current[0][0]['text'])
+            text = self.format_name(current[0][0]['text'], name)
             turn_data['text'].append(text)
             try:
                 uid = self.graph.cypher.execute('MATCH t --> (t2:turn) ' \
@@ -58,34 +57,33 @@ class Gameplay(object):
         return turn_data
 
 
-    def format_vars(self, text):
+    def format_name(self, text, name):
         ''' replaces {FORMATTED} variables with their constant '''
-        for key, value in self.params.items():
-            text = re.sub('{%s}' % key, value, text)
+        text = re.sub('{NAME}', name, text)
         return text
 
 
-    def process_response(self, turn_data, selection):
+    def process_response(self, turn_data, selection, name='dear'):
         ''' determine the selected option '''
         response = clean_response(selection)
         if response['valid']:
             if response['response_id'] < len(turn_data['options']):
                 option = turn_data['options'][response['response_id']]
                 if 'pointsTo' in option and option['pointsTo']:
-                    return self.get_turn(option['pointsTo'][0])
+                    return self.get_turn(option['pointsTo'][0], name)
 
         turn_data['text'] = ['I didn\'t catch that. Can you give me the letter of ' \
                              'the option you wanted?']
         return turn_data
 
 
-    def format_options(self, turn_data):
+    def format_options(self, turn_data, name='dear'):
         ''' creates the options menu formatted string '''
         prompt = turn_data['prompt']
         options = turn_data['options']
         message = [prompt]
         for (i, option) in enumerate(options):
-            text = self.format_vars(option['text'])
+            text = self.format_name(option['text'], name)
             message.append('%s) %s ' % (chr(ord('A')+i), text))
         return '\n'.join(message)
 
