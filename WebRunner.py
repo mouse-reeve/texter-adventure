@@ -25,6 +25,17 @@ def index():
     return make_response(open('index.html').read())
 
 
+@app.route('/api/open/<phone_number>', methods=['GET'])
+def open_game(phone_numnber):
+    try:
+        player = find_player(phone_number)
+    except NoResultFound:
+        return False
+    else:
+        turn_data = player.current_turn
+        turn = GAME.process_response(turn_data, sms['Body'])
+        return json.dumps(turn)
+
 @app.route('/api/start/<name>/<phone_number>', methods=['GET'])
 def start_game(name, phone_number):
     ''' gets the very beginning of a new game '''
@@ -80,7 +91,10 @@ def respond():
 @app.route('/api/games', methods=['GET'])
 def games():
     players = db.session.query(models.Player).all()
-    games = [h.turn_history for h in players]
+    games = [{
+        'turn_history': p.turn_history,
+        'name': p.name,
+        'phone': p.phone} for p in players]
     return json.dumps(games)
 
 
