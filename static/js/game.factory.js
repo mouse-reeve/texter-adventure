@@ -12,8 +12,8 @@ angular.module('gameFactory', []).factory('Game', function($http) {
             });
         },
 
-        getHistory: function(phone) {
-            return $http.get('/api/history/' + phone).then(function(response) {
+        getGames: function() {
+            return $http.get('/api/games').then(function(response) {
                 return response.data;
             });
         },

@@ -1,3 +1,7 @@
+body {
+    width: 200%;
+}
+
 h2 {
     text-transform: uppercase;
 }
@@ -10,8 +14,8 @@ input {
     width: 20em;
 }
 
-input.turn-text {
-    width: 60em;
+.turn-text {
+    width: 98%;
     display: block;
 }
 
@@ -20,5 +24,41 @@ input.uid {
 }
 
 ol {
+    margin: 0;
     list-style-type: upper-alpha;
+}
+
+.game {
+    float: left;
+    width: 25em;
+}
+
+.history {
+    height: 35em;
+    overflow: scroll;
+}
+
+.current {
+    height: 10em;
+}
+
+.current .card {
+    background: #ff6666;
+}
+.card {
+    border-radius: 5px;
+    margin: 0.5em;
+    padding: 0.5em;
+    background: #eee;
+}
+
+.text {
+    background: #fff;
+    padding: 0.25em;
+    margin: 0.25em;
+}
+
+.text p {
+    margin: 0;
+    padding: 0;
 }

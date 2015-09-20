@@ -77,6 +77,13 @@ def respond():
     return json.dumps(turn)
 
 
+@app.route('/api/games', methods=['GET'])
+def games():
+    players = db.session.query(models.Player).all()
+    games = [h.turn_history for h in players]
+    return json.dumps(games)
+
+
 @app.route('/api/history/<phone_number>', methods=['GET'])
 def history(phone_number):
     player = find_player(phone_number)

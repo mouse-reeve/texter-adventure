@@ -1,6 +1,6 @@
 function MainController($scope, Game) {
     $scope.state = 'waiting';
-    $scope.history = {};
+    $scope.games = {};
     Game.startGame('Alice', '15005550006').then(function(turn) {
         $scope.turn = turn;
         $scope.state = 'approve';
@@ -23,8 +23,8 @@ function MainController($scope, Game) {
     };
 
     var updateHistory = function(phone) {
-        Game.getHistory(phone).then(function(history) {
-            $scope.history = history;
+        Game.getGames().then(function(data) {
+            $scope.games = data;
         });
     };
 
