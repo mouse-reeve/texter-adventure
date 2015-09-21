@@ -5,7 +5,7 @@ function MainController($scope, Game) {
 
     $scope.startNew = {};
 
-    $scope.newGame = function () {
+    $scope.newGame = function() {
         Game.startNewGame($scope.startNew.name, $scope.startNew.phone).then(function(turn) {
             $scope.state[$scope.startNew.phone] = 'approve';
             updateHistory();
@@ -13,7 +13,7 @@ function MainController($scope, Game) {
     };
 
     $scope.approveTurn = function(phone) {
-        Game.sendTurn($scope.turn[phone], phone).then(function () {
+        Game.sendTurn($scope.turn[phone], phone).then(function() {
             updateHistory(phone);
         });
         $scope.state[phone] = 'respond';
@@ -26,11 +26,16 @@ function MainController($scope, Game) {
         });
     };
 
+    $scope.hideGame = function(game) {
+        game.show = false;
+        Game.hide(game.phone);
+    };
+
     var updateHistory = function(phone) {
         Game.getGames().then(function(data) {
             $scope.games = data;
 
-            angular.forEach($scope.games, function (game) {
+            angular.forEach($scope.games, function(game) {
                 if (game.turn_history.length && game.turn_history[game.turn_history.length - 1].type == 'turn') {
                     $scope.state[game.phone] = 'respond';
                 } else {

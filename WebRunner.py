@@ -89,6 +89,7 @@ def games():
         'turn_history': p.turn_history,
         'current_turn': p.current_turn,
         'name': p.name,
+        'show': p.show,
         'phone': p.phone} for p in players if p.show]
     return json.dumps(games)
 
@@ -104,6 +105,7 @@ def toggle_visibilty(phone_number):
     player = find_player(phone_number)
     player.show = not player.show
     db.session.commit()
+    return json.dumps({'visiblity': player.show})
 
 
 def find_player(phone_number):

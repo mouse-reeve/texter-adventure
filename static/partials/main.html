@@ -1,6 +1,6 @@
-<div class="game" ng-repeat="game in games track by $index">
+<div class="game" ng-repeat="game in games track by $index" ng-if="game.show">
     <header class="title">
-        {{game.name}}, {{game.phone}} --- <button ng-click="hideGame(game.phone)">hide</button>
+        {{game.name}}, {{game.phone}} --- <button ng-click="hideGame(game)">hide</button>
     </header>
     <div class="history">
         <div ng-repeat="historical_turn in game.turn_history" class="card">

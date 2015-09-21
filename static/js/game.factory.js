@@ -19,7 +19,7 @@ angular.module('gameFactory', []).factory('Game', function($http) {
         },
 
         hide: function(phone) {
-            return $http.post('/api/visibility/' + phone);
+            return $http.put('/api/visibility/' + phone);
         },
 
         // for test only
