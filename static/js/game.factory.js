@@ -18,6 +18,10 @@ angular.module('gameFactory', []).factory('Game', function($http) {
             });
         },
 
+        hide: function(phone) {
+            return $http.post('/api/visibility/' + phone);
+        },
+
         // for test only
         sendResponse: function(option, phone) {
             var smsData = {'Body': 'A', 'From': phone};

@@ -11,6 +11,8 @@ class Player(db.Model):
     phone = db.Column(db.String(11), unique=True)
     turn_history = db.Column(JSON)
     current_turn = db.Column(JSON)
+    start_time = db.Column(db.DateTime, server_default=db.func.now())
+    show = db.Column(db.Boolean)
 
     def __init__(self, name, number):
         self.name = name

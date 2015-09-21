@@ -33,6 +33,7 @@ def start_game(name, phone_number):
         player = find_player(phone_number)
     except NoResultFound:
         player = models.Player(name, int(phone_number))
+        player.show = True
         db.session.add(player)
         db.session.commit()
 
@@ -88,7 +89,7 @@ def games():
         'turn_history': p.turn_history,
         'current_turn': p.current_turn,
         'name': p.name,
-        'phone': p.phone} for p in players]
+        'phone': p.phone} for p in players if p.show]
     return json.dumps(games)
 
 
@@ -96,6 +97,13 @@ def games():
 def history(phone_number):
     player = find_player(phone_number)
     return json.dumps(player.turn_history)
+
+
+@app.route('/api/visibility/<phone_number>', methods=['PUT'])
+def toggle_visibilty(phone_number):
+    player = find_player(phone_number)
+    player.show = not player.show
+    db.session.commit()
 
 
 def find_player(phone_number):

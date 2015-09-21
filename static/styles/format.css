@@ -1,5 +1,6 @@
-body {
-    width: 200%;
+.container {
+    width: 300%;
+    display: inline-block;
 }
 
 h2 {
