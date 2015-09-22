@@ -1,7 +1,6 @@
 ''' The interface for performing I/O to the player '''
 import configparser
 import logging
-import time
 from twilio.rest import TwilioRestClient
 
 class AbstractIO(object):

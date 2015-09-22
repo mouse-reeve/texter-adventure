@@ -8,6 +8,7 @@ function MainController($scope, Game) {
     $scope.newGame = function() {
         Game.startNewGame($scope.startNew.name, $scope.startNew.phone).then(function(turn) {
             $scope.state[$scope.startNew.phone] = 'approve';
+            $scope.startNew = {};
             updateHistory();
         });
     };
