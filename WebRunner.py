@@ -38,7 +38,7 @@ def start_game(name, phone_number):
         db.session.commit()
 
     turn = GAME.start(player.name)
-    player.current_turn = turn;
+    player.current_turn = turn
     db.session.commit()
     return json.dumps(turn)
 
@@ -83,25 +83,31 @@ def respond():
 
 
 @app.route('/api/games', methods=['GET'])
-def games():
+def get_games():
+    ''' gets all game data '''
     players = db.session.query(models.Player).all()
-    games = [{
-        'turn_history': p.turn_history,
-        'current_turn': p.current_turn,
-        'name': p.name,
-        'show': p.show,
-        'phone': p.phone} for p in players if p.show]
+    games = [
+        {
+            'turn_history': p.turn_history,
+            'current_turn': p.current_turn,
+            'name': p.name,
+            'phone': p.phone,
+            'show': p.show,
+            'start_time': p.start_time.isoformat(),
+        } for p in players if p.show]
     return json.dumps(games)
 
 
 @app.route('/api/history/<phone_number>', methods=['GET'])
-def history(phone_number):
+def get_history(phone_number):
+    ''' gets the history of a single game '''
     player = find_player(phone_number)
     return json.dumps(player.turn_history)
 
 
 @app.route('/api/visibility/<phone_number>', methods=['PUT'])
 def toggle_visibilty(phone_number):
+    ''' show or hide a game '''
     player = find_player(phone_number)
     player.show = not player.show
     db.session.commit()
@@ -109,10 +115,12 @@ def toggle_visibilty(phone_number):
 
 
 def find_player(phone_number):
+    ''' looks up a player by phone number '''
     return db.session.query(models.Player).filter(models.Player.phone == phone_number).one()
 
 
 def update_turn_log(player, turn_data, response=False):
+    ''' Adds turn data to db '''
     turn_type = 'response'
     if not response:
         turn_type = 'turn'

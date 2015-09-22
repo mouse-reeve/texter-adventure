@@ -1,4 +1,4 @@
-<div class="game" ng-repeat="game in games track by $index" ng-if="game.show">
+<div class="game" ng-repeat="game in games track by $index | orderBy : game.start_time" ng-if="game.show">
     <header class="title">
         {{game.name}}, {{game.phone}} --- <button ng-click="hideGame(game)">hide</button>
     </header>
