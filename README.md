@@ -24,5 +24,5 @@ $ python
 >> from WebRunner import db
 >> db.create_all()
 ```
-- Populate a Neo4j graph with the game data, or use the `BuildFromScapple.py` script in `utilities/` to populate the graph from a [scapple](https://www.literatureandlatte.com/scapple.php) file.
-- Run `WebRunner.py` and open `localhost:4000` in your browser
+- Populate a Neo4j graph with the game data, or use the `BuildFromScapple.py` script in `utilities/` to populate the graph from a [scapple](https://www.literatureandlatte.com/scapple.php) file. A properly formatted example is provided in `utilities/`.
+- Run `WebRunner.py` and open `localhost:4000` in your browser.
