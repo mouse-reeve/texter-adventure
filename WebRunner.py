@@ -56,12 +56,20 @@ def send_turn(phone_number):
     # send a turn
     for text in turn_data['text']:
         logging.info('sending message: %s', text)
-        queue.append(TWILIO.send(text, '+%s' % player.phone))
+        try:
+            queue.append(TWILIO.send(text, '+%s' % player.phone))
+        except Exception as e:
+            logging.error('Twilio error %s', e)
+            return json.dumps({'success': False, 'error': e.status})
 
     if len(turn_data['options']):
         options_text = GAME.format_options(turn_data, player.name)
         logging.info('sending message: %s', options_text)
-        queue.append(TWILIO.send(options_text, '+%s' % player.phone))
+        try:
+            queue.append(TWILIO.send(options_text, '+%s' % player.phone))
+        except Exception as e:
+            logging.error('Twilio error %s', e)
+            return json.dumps({'success': False, 'error': e.status})
 
     update_turn_log(player, turn_data)
 

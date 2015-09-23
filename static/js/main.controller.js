@@ -2,6 +2,7 @@ function MainController($scope, Game) {
     $scope.state = {};
     $scope.games = {};
     $scope.turn = [];
+    $scope.error = [];
 
     $scope.startNew = {};
 
@@ -14,14 +15,19 @@ function MainController($scope, Game) {
     };
 
     $scope.approveTurn = function(phone) {
-        Game.sendTurn($scope.turn[phone], phone).then(function() {
-            updateHistory(phone);
+        Game.sendTurn($scope.turn[phone], phone).then(function(response) {
+            if ( !('error' in response) ) {
+                updateHistory(phone);
+                $scope.error[phone] = false;
+            } else {
+                $scope.error[phone] = true;
+            }
         });
         $scope.state[phone] = 'respond';
     };
 
     $scope.sendResponse = function(option, phone) {
-        Game.sendResponse(option, phone).then(function(turn) {
+        Game.sendResponse(option, phone).then(function() {
             $scope.state[phone] = 'approve';
             updateHistory(phone);
         });
@@ -38,6 +44,10 @@ function MainController($scope, Game) {
             total += 'text' in option ? option.text.length : 0;
         });
         return total >= 160 - (3 * 3) ? 'error' : '';
+    };
+
+    $scope.smsError = function(phone) {
+        return !!$scope.error[phone] ? 'error' : '';
     };
 
     var updateHistory = function(phone) {

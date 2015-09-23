@@ -1,5 +1,5 @@
 <div class="game" ng-repeat="game in games | orderBy:'start_time'" ng-if="game.show">
-    <header class="title">
+    <header class="title" ng-class="smsError(game.phone)">
         {{game.name}}, {{game.phone}} --- <button ng-click="hideGame(game)">hide</button>
     </header>
     <div class="history">
