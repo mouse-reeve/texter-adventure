@@ -17,11 +17,11 @@ function MainController($scope, Game) {
     $scope.approveTurn = function(phone) {
         Game.sendTurn($scope.turn[phone], phone).then(function(response) {
             if ( !('error' in response) ) {
-                updateHistory(phone);
                 $scope.error[phone] = false;
             } else {
                 $scope.error[phone] = true;
             }
+            updateHistory(phone);
         });
         $scope.state[phone] = 'respond';
     };
