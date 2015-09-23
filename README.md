@@ -2,9 +2,9 @@
 
 A system for running a CYOA/text adventure type game through twilio, with a graph backend. This is a common use case, right?
 
-To run:
+## Instructions
 
-- Install and start Neo4j and Prostgres.
+- Install and start [Neo4j](http://neo4j.com/download/) and [ProstgreSQL](http://www.postgresql.org/download/).
 - Create `dev-settings.ini` and `prod-settings.ini` with your development and production API keys from Twilio. The files should follow this format:
 ```
 [twilio]
