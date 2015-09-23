@@ -30,10 +30,11 @@
             <form ng-if="state[game.phone] == 'approve'">
                 <div class="text">
                     <textarea class="turn-text"
+                           ng-class="turn[game.phone].text[$index].length >= 160 ? 'error' : ''"
                            ng-repeat="text in turn[game.phone].text track by $index"
                            ng-model="turn[game.phone].text[$index]"></textarea>
                 </div>
-                <div class="text">
+                <div class="text" ng-class="checkOptionLength(turn[game.phone])">
                     <input type="text" ng-model="turn[game.phone].prompt">
                     <ol>
                         <li ng-repeat="option in turn[game.phone].options track by $index">

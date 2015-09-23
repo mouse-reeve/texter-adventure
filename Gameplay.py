@@ -8,6 +8,14 @@ class Gameplay(object):
     def __init__(self):
         self.graph = Graph()
         self.autonomous = False
+        self.blank_turn = {
+            'text': [''],
+            'prompt': 'Please select an option:',
+            'options': [
+                {'pointsTo': None}, {'pointsTo': None}, {'pointsTo': None}
+            ],
+            'uid': None
+        }
 
 
     def start(self, name='dear'):
@@ -72,14 +80,7 @@ class Gameplay(object):
                 if 'pointsTo' in option and option['pointsTo']:
                     return self.get_turn(option['pointsTo'], name)
                 else:
-                    return {
-                        'text': [''],
-                        'prompt': 'Please select an option:',
-                        'options': [
-                            {'pointsTo': None}, {'pointsTo': None}, {'pointsTo': None}
-                        ],
-                        'uid': None
-                    }
+                    return self.blank_turn
 
         turn_data['text'] = ['I didn\'t catch that. Can you give me the letter of ' \
                              'the option you wanted?']

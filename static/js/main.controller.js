@@ -32,6 +32,14 @@ function MainController($scope, Game) {
         Game.hide(game.phone);
     };
 
+    $scope.checkOptionLength = function(turn) {
+        var total = turn.prompt.length;
+        angular.forEach(turn.options, function(option) {
+            total += 'text' in option ? option.text.length : 0;
+        });
+        return total >= 160 - (3 * 3) ? 'error' : '';
+    };
+
     var updateHistory = function(phone) {
         Game.getGames().then(function(data) {
             $scope.games = data;

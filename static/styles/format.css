@@ -49,7 +49,7 @@ header {
 }
 
 .current .card {
-    background: #ff6666;
+    background: #66ff66;
 }
 .card {
     border-radius: 5px;
@@ -71,4 +71,8 @@ header {
 
 .start-game label {
     display: block;
+}
+
+.error {
+    background: #ff6666;
 }
