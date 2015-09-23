@@ -38,7 +38,7 @@
                     <ol>
                         <li ng-repeat="option in turn[game.phone].options track by $index">
                             <input type="text" class="option" ng-model="turn[game.phone].options[$index]['text']">
-                            <input type="number" class="uid" ng-model="turn[game.phone].options[$index]['pointsTo'][0]">
+                            <input type="number" class="uid" ng-model="turn[game.phone].options[$index]['pointsTo']">
                         </li>
                     </ol>
                 </div>

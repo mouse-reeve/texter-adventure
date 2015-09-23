@@ -47,7 +47,7 @@ class Gameplay(object):
         for option in options:
             option_dict = {
                 'text': option[0]['text'],
-                'pointsTo': option[0]['pointsTo'] if 'pointsTo' in option[0] else None
+                'pointsTo': option[0]['pointsTo'][0] if 'pointsTo' in option[0] else None
             }
             optionset.insert(0, option_dict)
 
@@ -70,7 +70,16 @@ class Gameplay(object):
             if response['response_id'] < len(turn_data['options']):
                 option = turn_data['options'][response['response_id']]
                 if 'pointsTo' in option and option['pointsTo']:
-                    return self.get_turn(option['pointsTo'][0], name)
+                    return self.get_turn(option['pointsTo'], name)
+                else:
+                    return {
+                        'text': [''],
+                        'prompt': 'Please select an option:',
+                        'options': [
+                            {'pointsTo': None}, {'pointsTo': None}, {'pointsTo': None}
+                        ],
+                        'uid': None
+                    }
 
         turn_data['text'] = ['I didn\'t catch that. Can you give me the letter of ' \
                              'the option you wanted?']
