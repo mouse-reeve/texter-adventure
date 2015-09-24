@@ -15,21 +15,6 @@ class AbstractIO(object):
         raise NotImplementedError()
 
 
-class SysIO(AbstractIO):
-    ''' Uses command line input for game flow '''
-    def send(self, text, recipient=None):
-        print('\n')
-        for line in text.split('\n'):
-            print(line)
-
-        return {'success': True}
-
-    def receive(self):
-        print('\n')
-        raw_response = input()
-        return raw_response
-
-
 class TwilioIO(AbstractIO):
     ''' connects to the twilio API '''
 
@@ -79,4 +64,5 @@ class TwilioIO(AbstractIO):
 
 
     def receive(self):
-        return 'A'
+        # this should never be called in the twilio workflow
+        return None
