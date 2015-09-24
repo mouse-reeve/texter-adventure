@@ -1,60 +1,68 @@
-<div class="game" ng-repeat="game in games | orderBy:'start_time'" ng-if="game.show">
-    <header class="title" ng-class="smsError(game.phone)">
-        {{game.name}}, {{game.phone}} --- <button ng-click="hideGame(game)">hide</button>
-    </header>
-    <div class="history">
-        <div ng-repeat="historical_turn in game.turn_history" class="card">
-            <div ng-if="historical_turn.type == 'turn'">
-                <div class="text">
-                    <p ng-repeat="text in historical_turn.content.text track by $index">{{ text }}</p>
+<header>
+    {{ games.length }} running. <button ng-click="updateHistory()">reload</button>
+</header>
+
+<div>
+    <div class="game" ng-repeat="game in games | orderBy:'start_time'" ng-if="game.show">
+        <header class="title" ng-class="smsError(game.phone)">
+            {{game.name}}, {{game.phone}} --- <button ng-click="hideGame(game)">hide</button>
+        </header>
+        <div class="history">
+            <div ng-repeat="historical_turn in game.turn_history" class="card">
+                <div ng-if="historical_turn.type == 'turn'">
+                    <div class="text">
+                        <p ng-repeat="text in historical_turn.content.text track by $index">{{ text }}</p>
+                    </div>
+                    <div class="text" ng-if="options in historical_turn.content">
+                        <p>{{ historical_turn.content.prompt }}</p>
+                        <ol>
+                            <li ng-repeat="option in historical_turn.content.options track by $index">
+                                {{ option['text'] }}
+                            </li>
+                        </ol>
+                    </div>
                 </div>
-                <div class="text">
-                    <p>{{ historical_turn.content.prompt }}</p>
-                    <ol>
-                        <li ng-repeat="option in historical_turn.content.options track by $index">
-                            {{ option['text'] }}
-                        </li>
-                    </ol>
+                <div ng-if="historical_turn.type != 'turn'">
+                    <div class="text">
+                        <p>{{ historical_turn.content.Body }}</p>
+                    </div>
                 </div>
             </div>
-            <div ng-if="historical_turn.type != 'turn'">
-                <div class="text">
-                    <p>{{ historical_turn.content.Body }}</p>
-                </div>
+        </div>
+
+        <div class="current">
+            <div class="card">
+                <form ng-if="state[game.phone] == 'approve'">
+                    <div class="text">
+                        <textarea class="turn-text"
+                               ng-class="turn[game.phone].text[$index].length >= 160 ? 'error' : ''"
+                               ng-repeat="text in turn[game.phone].text track by $index"
+                               ng-model="turn[game.phone].text[$index]"></textarea>
+                    </div>
+                    <div class="text" ng-class="checkOptionLength(turn[game.phone])">
+                        <input type="text" ng-model="turn[game.phone].prompt">
+                        <ol>
+                            <li ng-repeat="option in turn[game.phone].options track by $index">
+                                <input type="text" class="option" ng-model="turn[game.phone].options[$index]['text']">
+                                <input type="number" class="uid" ng-model="turn[game.phone].options[$index]['pointsTo']">
+                            </li>
+                        </ol>
+                    </div>
+                </form>
+
+                <button ng-click="approveTurn(game.phone)" ng-if="state[game.phone] == 'approve'">Send turn</button>
+                <button ng-click="sendResponse('A', game.phone)" ng-if="state[game.phone] == 'respond'">Pick option A</button>
+                <button ng-click="sendResponse('B', game.phone)" ng-if="state[game.phone] == 'respond'">Pick option B</button>
+                <button ng-click="sendResponse('C', game.phone)" ng-if="state[game.phone] == 'respond'">Pick option C</button>
             </div>
         </div>
     </div>
 
-    <div class="current">
-        <div class="card">
-            <form ng-if="state[game.phone] == 'approve'">
-                <div class="text">
-                    <textarea class="turn-text"
-                           ng-class="turn[game.phone].text[$index].length >= 160 ? 'error' : ''"
-                           ng-repeat="text in turn[game.phone].text track by $index"
-                           ng-model="turn[game.phone].text[$index]"></textarea>
-                </div>
-                <div class="text" ng-class="checkOptionLength(turn[game.phone])">
-                    <input type="text" ng-model="turn[game.phone].prompt">
-                    <ol>
-                        <li ng-repeat="option in turn[game.phone].options track by $index">
-                            <input type="text" class="option" ng-model="turn[game.phone].options[$index]['text']">
-                            <input type="number" class="uid" ng-model="turn[game.phone].options[$index]['pointsTo']">
-                        </li>
-                    </ol>
-                </div>
-            </form>
-
-            <button ng-click="approveTurn(game.phone)" ng-if="state[game.phone] == 'approve'">Send turn</button>
-            <button ng-click="sendResponse('A', game.phone)" ng-if="state[game.phone] == 'respond'">Pick option A</button>
-        </div>
+    <div class="start-game">
+        <form>
+            <label>Name <input type="text" ng-model="startNew.name"></label>
+            <label>Phone <input type="text" ng-model="startNew.phone"></label>
+            <button ng-click="newGame()" ng-disabled="!startNew.name || !startNew.phone">Start new game</button>
+        </form>
     </div>
-</div>
-
-<div class="start-game">
-    <form>
-        <label>Name <input type="text" ng-model="startNew.name"></label>
-        <label>Phone <input type="text" ng-model="startNew.phone"></label>
-        <button ng-click="newGame()" ng-disabled="!startNew.name || !startNew.phone">Start new game</button>
-    </form>
 </div>

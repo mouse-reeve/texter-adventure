@@ -1,3 +1,14 @@
+.container > header {
+    border-radius: 5px;
+    margin: 0.5em;
+    padding: 0.5em;
+    width: 35em;
+    background: #ddd;
+}
+.container > header button {
+    float: right;
+}
+
 .container {
     width: 300%;
     display: inline-block;
@@ -34,13 +45,13 @@ ol {
     width: 25em;
 }
 
-header {
+.game header {
     text-align: center;
     font-weight: bold;
 }
 
 .history {
-    height: 35em;
+    height: 30em;
     overflow: scroll;
 }
 

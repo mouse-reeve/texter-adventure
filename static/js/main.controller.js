@@ -10,7 +10,7 @@ function MainController($scope, Game) {
         Game.startNewGame($scope.startNew.name, $scope.startNew.phone).then(function(turn) {
             $scope.state[$scope.startNew.phone] = 'approve';
             $scope.startNew = {};
-            updateHistory();
+            $scope.updateHistory();
         });
     };
 
@@ -21,7 +21,7 @@ function MainController($scope, Game) {
             } else {
                 $scope.error[phone] = true;
             }
-            updateHistory(phone);
+            $scope.updateHistory(phone);
         });
         $scope.state[phone] = 'respond';
     };
@@ -29,7 +29,7 @@ function MainController($scope, Game) {
     $scope.sendResponse = function(option, phone) {
         Game.sendResponse(option, phone).then(function() {
             $scope.state[phone] = 'approve';
-            updateHistory(phone);
+            $scope.updateHistory(phone);
         });
     };
 
@@ -50,7 +50,7 @@ function MainController($scope, Game) {
         return !!$scope.error[phone] ? 'error' : '';
     };
 
-    var updateHistory = function(phone) {
+    $scope.updateHistory = function(phone) {
         Game.getGames().then(function(data) {
             $scope.games = data;
 
@@ -66,5 +66,5 @@ function MainController($scope, Game) {
         });
     };
 
-    updateHistory();
+    $scope.updateHistory();
 }
