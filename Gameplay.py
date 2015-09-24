@@ -12,7 +12,10 @@ class Gameplay(object):
             'text': [''],
             'prompt': 'Please select an option:',
             'options': [
-                {'pointsTo': None}, {'pointsTo': None}, {'pointsTo': None}
+                {'pointsTo': None},
+                {'pointsTo': None},
+                {'pointsTo': None},
+                {'text': 'Other', 'pointTo': None}
             ],
             'uid': None
         }
@@ -58,6 +61,10 @@ class Gameplay(object):
                 'pointsTo': option[0]['pointsTo'][0] if 'pointsTo' in option[0] else None
             }
             optionset.insert(0, option_dict)
+
+        if uid != 1:
+            # "other" options show up after the first turn
+            optionset.append({'text': 'Other', 'pointsTo': None})
 
         turn_data['prompt'] = prompt['text']
         turn_data['options'] = optionset
