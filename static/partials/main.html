@@ -3,7 +3,7 @@
 </header>
 
 <div>
-    <div class="game" ng-repeat="game in games | orderBy:'start_time'" ng-if="game.show">
+    <div class="game" ng-repeat="game in games | orderBy:'start_time':-1" ng-if="game.show">
         <header class="title" ng-class="smsError(game.phone)">
             {{game.name}}, {{game.phone}} --- <button ng-click="hideGame(game)">hide</button>
         </header>
@@ -13,7 +13,7 @@
                     <div class="text">
                         <p ng-repeat="text in historical_turn.content.text track by $index">{{ text }}</p>
                     </div>
-                    <div class="text" ng-if="options in historical_turn.content">
+                    <div class="text" ng-if="historical_turn.content.options">
                         <p>{{ historical_turn.content.prompt }}</p>
                         <ol>
                             <li ng-repeat="option in historical_turn.content.options track by $index">

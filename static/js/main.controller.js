@@ -15,6 +15,7 @@ function MainController($scope, Game) {
     };
 
     $scope.approveTurn = function(phone) {
+        $scope.state[phone] = 'waiting';
         Game.sendTurn($scope.turn[phone], phone).then(function(response) {
             if ( !('error' in response) ) {
                 $scope.error[phone] = false;
@@ -22,11 +23,12 @@ function MainController($scope, Game) {
                 $scope.error[phone] = true;
             }
             $scope.updateHistory(phone);
+            $scope.state[phone] = 'respond';
         });
-        $scope.state[phone] = 'respond';
     };
 
     $scope.sendResponse = function(option, phone) {
+        $scope.state[phone] = 'waiting';
         Game.sendResponse(option, phone).then(function() {
             $scope.state[phone] = 'approve';
             $scope.updateHistory(phone);
