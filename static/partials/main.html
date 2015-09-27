@@ -68,16 +68,22 @@
 
             <p ng-click="game.showAdvanced = !game.showAdvanced">Show advanced</p>
             <div class="card" ng-show="game.showAdvanced">
-                <button ng-click="restart(game)">Restart at turn 1</button>
+                <ul>
+                    <li><button ng-click="restart(game)">Restart at turn 1</button></li>
+                    <li>
+                        <label>Set guess to uid <input ng-model="game.newUID"></input></label>
+                        <button ng-click="setUID(game)">Set</button>
+                    </li>
+                </ul>
+            </div>
             </div>
         </div>
-    </div>
 
-    <div class="start-game">
-        <form>
-            <label>Name <input type="text" ng-model="startNew.name"></label>
-            <label>Phone <input type="text" ng-model="startNew.phone"></label>
-            <button ng-click="newGame()" ng-disabled="!startNew.name || !startNew.phone">Start new game</button>
-        </form>
+        <div class="start-game">
+            <form>
+                <label>Name <input type="text" ng-model="startNew.name"></label>
+                <label>Phone <input type="text" ng-model="startNew.phone"></label>
+                <button ng-click="newGame()" ng-disabled="!startNew.name || !startNew.phone">Start new game</button>
+            </form>
+        </div>
     </div>
-</div>

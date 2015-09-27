@@ -144,6 +144,16 @@ def set_name(phone_number, name):
     db.session.commit()
     return json.dumps({'success': True})
 
+
+@app.route('/api/uid/<phone_number>/<uid>', methods=['PUT'])
+def set_current_turn(uid, phone_number):
+    player = find_player(phone_number)
+    turn = GAME.get_turn(uid, player.name)
+    player.current_turn = turn
+    db.session.commit()
+    return json.dumps(turn)
+
+
 def find_player(phone_number):
     ''' looks up a player by phone number '''
     return db.session.query(models.Player).filter(models.Player.phone == phone_number).one()

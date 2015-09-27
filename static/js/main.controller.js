@@ -47,6 +47,12 @@ function MainController($scope, Game) {
         });
     };
 
+    $scope.setUID = function(game) {
+        Game.setUID(game.newUID, game.phone).then(function() {
+            $scope.updateHistory();
+        });
+    };
+
     $scope.hideGame = function(game) {
         game.show = false;
         Game.hide(game.phone);
