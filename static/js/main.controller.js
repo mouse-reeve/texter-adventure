@@ -14,6 +14,12 @@ function MainController($scope, Game) {
         });
     };
 
+    $scope.restart = function(game) {
+        Game.startNewGame(game.name, game.phone).then(function(turn) {
+            $scope.updateHistory();
+        });
+    };
+
     $scope.approveTurn = function(phone) {
         $scope.state[phone] = 'waiting';
         Game.sendTurn($scope.turn[phone], phone).then(function(response) {
@@ -32,6 +38,12 @@ function MainController($scope, Game) {
         Game.sendResponse(option, phone).then(function() {
             $scope.state[phone] = 'approve';
             $scope.updateHistory(phone);
+        });
+    };
+
+    $scope.setName = function(game) {
+        Game.setName(game.newName, game.phone).then(function() {
+            game.name = game.newName;
         });
     };
 

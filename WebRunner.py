@@ -1,4 +1,4 @@
-''' Runs a dashboard app for texter adventures '''
+''' Runs a ``dashboard app for texter adventures '''
 from flask import Flask, make_response, request
 from flask.ext.sqlalchemy import SQLAlchemy
 import json
@@ -62,7 +62,7 @@ def send_turn(phone_number):
             logging.error('Twilio error %s', e)
             return json.dumps({'success': False, 'error': e.status})
 
-    if len(turn_data['options']):
+    if 'options' in turn_data and len(turn_data['options']):
         options_text = GAME.format_options(turn_data, player.name)
         logging.info('sending message: %s', options_text)
         try:
@@ -79,15 +79,26 @@ def send_turn(phone_number):
 @app.route('/api/respond', methods=['POST'])
 def respond():
     ''' receives a reply from twilio '''
-    sms = request.get_json()
-    player = find_player(sms['From'])
-    turn_data = player.current_turn
-    update_turn_log(player, sms, response=True)
+    sms = request.values.to_dict()
+    phone = sms['From'].replace('+', '')
+    try:
+        player = find_player(phone)
+    except NoResultFound:
+        # contact from an unknown number
+        player = models.Player(None, phone)
+        player.show = True
+        player.current_turn = {'text': ['Pardon me, but what name do you go by?'], 'uid': None}
+        db.session.add(player)
+        db.session.commit()
+        return json.dumps(player.current_turn)
+    else:
+        turn_data = player.current_turn
+        update_turn_log(player, sms, response=True)
 
-    turn = GAME.process_response(turn_data, sms['Body'], player.name)
-    player.current_turn = turn
-    db.session.commit()
-    return json.dumps(turn)
+        turn = GAME.process_response(turn_data, sms['Body'], player.name)
+        player.current_turn = turn
+        db.session.commit()
+        return json.dumps(turn)
 
 
 @app.route('/api/games', methods=['GET'])
@@ -121,6 +132,13 @@ def toggle_visibilty(phone_number):
     db.session.commit()
     return json.dumps({'visiblity': player.show})
 
+
+@app.route('/api/name/<phone_number>/<name>', methods=['PUT'])
+def set_name(phone_number, name):
+    player = find_player(phone_number)
+    player.name = name
+    db.session.commit()
+    return json.dumps({'success': True})
 
 def find_player(phone_number):
     ''' looks up a player by phone number '''

@@ -31,7 +31,7 @@
         </div>
 
         <div class="current">
-            <div class="card">
+            <div class="card" ng-class="{'approve': state[game.phone] == 'approve'}">
                 <form ng-if="state[game.phone] == 'approve'">
                     <div class="text">
                         <textarea class="turn-text"
@@ -39,7 +39,7 @@
                                ng-repeat="text in turn[game.phone].text track by $index"
                                ng-model="turn[game.phone].text[$index]"></textarea>
                     </div>
-                    <div class="text" ng-class="checkOptionLength(turn[game.phone])">
+                    <div class="text" ng-class="checkOptionLength(turn[game.phone])" ng-if="turn[game.phone].prompt">
                         <input type="text" ng-model="turn[game.phone].prompt">
                         <ol>
                             <li ng-repeat="option in turn[game.phone].options track by $index">
@@ -51,9 +51,24 @@
                 </form>
 
                 <button ng-click="approveTurn(game.phone)" ng-if="state[game.phone] == 'approve'">Send turn</button>
-                <button ng-click="sendResponse('A', game.phone)" ng-if="state[game.phone] == 'respond'">Pick option A</button>
-                <button ng-click="sendResponse('B', game.phone)" ng-if="state[game.phone] == 'respond'">Pick option B</button>
-                <button ng-click="sendResponse('C', game.phone)" ng-if="state[game.phone] == 'respond'">Pick option C</button>
+                <div ng-if="testMode && state[game.phone] == 'respond'">
+                    <button ng-click="sendResponse('A', game.phone)">Pick option A</button>
+                    <button ng-click="sendResponse('B', game.phone)">Pick option B</button>
+                    <button ng-click="sendResponse('C', game.phone)">Pick option C</button>
+                </div>
+                <p ng-if="!testMode && state[game.phone] == 'respond'">waiting for a response...</p>
+
+            </div>
+            <div class="card" ng-if="!game.name">
+                <div>
+                    <label>Set player name: <input type="text" value="" ng-model="game.newName"></label>
+                    <button ng-click="setName(game)">Save</button>
+                </div>
+            </div>
+
+            <p ng-click="game.showAdvanced = !game.showAdvanced">Show advanced</p>
+            <div class="card" ng-show="game.showAdvanced">
+                <button ng-click="restart(game)">Restart at turn 1</button>
             </div>
         </div>
     </div>

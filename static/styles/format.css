@@ -60,7 +60,10 @@ ol {
 }
 
 .current .card {
-    background: #66ff66;
+    background: #eee;
+}
+.current .card.approve {
+    background: #33cc33;
 }
 .card {
     border-radius: 5px;

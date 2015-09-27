@@ -21,9 +21,11 @@ class TwilioIO(AbstractIO):
     def __init__(self):
         config = configparser.ConfigParser()
         config.read('settings.ini')
-        if config['environment']['debug']:
+        if config.getboolean('environment', 'debug'):
+            logging.warn('Loading test credentials')
             config.read('dev-settings.ini')
         else:
+            logging.warn('Loading production credentials')
             config.read('prod-settings.ini')
 
         try:

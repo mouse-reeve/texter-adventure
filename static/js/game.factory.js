@@ -18,6 +18,12 @@ angular.module('gameFactory', []).factory('Game', function($http) {
             });
         },
 
+        setName: function(name, phone) {
+            return $http.put('/api/name/' + phone + '/' + name).then(function(response) {
+                return response.data;
+            });
+        },
+
         hide: function(phone) {
             return $http.put('/api/visibility/' + phone);
         },
