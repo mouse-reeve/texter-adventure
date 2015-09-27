@@ -4,6 +4,7 @@ from flask.ext.sqlalchemy import SQLAlchemy
 import json
 import logging
 from sqlalchemy.orm.exc import NoResultFound
+import time
 
 from Gameplay import Gameplay
 from IO import TwilioIO
@@ -17,6 +18,7 @@ import models
 
 GAME = Gameplay()
 TWILIO = TwilioIO()
+DELAY = 1
 
 # ROUTES
 @app.route('/')
@@ -58,6 +60,7 @@ def send_turn(phone_number):
         logging.info('sending message: %s', text)
         try:
             queue.append(TWILIO.send(text, '+%s' % player.phone))
+            time.sleep(DELAY)
         except Exception as e:
             logging.error('Twilio error %s', e)
             return json.dumps({'success': False, 'error': e.status})
@@ -67,6 +70,7 @@ def send_turn(phone_number):
         logging.info('sending message: %s', options_text)
         try:
             queue.append(TWILIO.send(options_text, '+%s' % player.phone))
+            time.sleep(DELAY)
         except Exception as e:
             logging.error('Twilio error %s', e)
             return json.dumps({'success': False, 'error': e.status})
