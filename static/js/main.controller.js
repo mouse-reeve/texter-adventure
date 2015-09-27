@@ -60,7 +60,7 @@ function MainController($scope, Game) {
 
     $scope.removeOptions = function(phone) {
         delete $scope.turn[phone].prompt;
-        $scope.turn[phone].options = null;
+        delete $scope.turn[phone].options;
     };
 
     $scope.checkOptionLength = function(turn) {
