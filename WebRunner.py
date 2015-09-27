@@ -168,6 +168,7 @@ def update_turn_log(player, turn_data, response=False):
     history = player.turn_history[:]
     history.append({'type': turn_type, 'content': turn_data})
     player.turn_history = history
+    player.show = True
     db.session.commit()
 
 if __name__ == '__main__':
