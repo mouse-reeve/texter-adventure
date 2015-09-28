@@ -59,6 +59,10 @@ ol {
     height: 10em;
 }
 
+.card.response {
+    background: #ccc;
+}
+
 .current .card {
     background: #eee;
 }

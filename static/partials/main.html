@@ -8,7 +8,7 @@
             {{game.name}}, {{game.phone}} --- <button ng-click="hideGame(game)">hide</button>
         </header>
         <div class="history">
-            <div ng-repeat="historical_turn in game.turn_history" class="card">
+            <div ng-repeat="historical_turn in game.turn_history" class="card {{ historical_turn.type }}">
                 <div ng-if="historical_turn.type == 'turn'">
                     <div class="text">
                         <p ng-repeat="text in historical_turn.content.text track by $index">{{ text }}</p>
