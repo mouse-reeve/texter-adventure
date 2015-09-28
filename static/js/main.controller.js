@@ -63,6 +63,16 @@ function MainController($scope, Game) {
         delete $scope.turn[phone].options;
     };
 
+    $scope.addOptions = function(phone) {
+        $scope.turn[phone].prompt = 'Please select an option:';
+        $scope.turn[phone].options = [
+            {'text': '', 'pointsTo': null},
+            {'text': '', 'pointsTo': null},
+            {'text': '', 'pointsTo': null},
+            {'text': 'Other', 'pointsTo': null}
+        ];
+    };
+
     $scope.checkOptionLength = function(turn) {
         var total = turn.prompt.length;
         angular.forEach(turn.options, function(option) {
