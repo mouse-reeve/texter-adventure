@@ -85,7 +85,6 @@ function MainController($scope, Game) {
     $scope.updateHistory = function(phone) {
         Game.getGames().then(function(data) {
             $scope.games = data;
-            console.log($scope.games);
 
             angular.forEach($scope.games, function(game) {
                 if (game.messages.length && !game.messages[game.messages.length - 1].incoming) {
