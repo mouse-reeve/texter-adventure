@@ -14,7 +14,6 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://localhost/texter_dev'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 
 import models
-from models import Player
 
 models.db.init_app(app)
 
@@ -170,10 +169,6 @@ def set_current_turn(uid, phone):
     return json.dumps(turn)
 
 
-# DB INTERACTION
-
-
 if __name__ == '__main__':
     app.debug = True
     app.run(port=4000)
-

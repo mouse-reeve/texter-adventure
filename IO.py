@@ -3,19 +3,7 @@ import configparser
 import logging
 from twilio.rest import TwilioRestClient
 
-class AbstractIO(object):
-    ''' Defines basic types of communication (in and out) '''
-
-    def send(self, text, recipient):
-        ''' Prompt the player with a scene or options '''
-        raise NotImplementedError()
-
-    def receive(self):
-        ''' Get an answer from the player '''
-        raise NotImplementedError()
-
-
-class TwilioIO(AbstractIO):
+class TwilioIO(object):
     ''' connects to the twilio API '''
 
     def __init__(self):
@@ -44,6 +32,7 @@ class TwilioIO(AbstractIO):
 
 
     def send(self, text, recipient):
+        ''' use twilio to send an sms '''
         try:
             message = self.client.messages.create(body=text, to=recipient, from_=self.sender)
         except AttributeError:
@@ -63,8 +52,3 @@ class TwilioIO(AbstractIO):
             'body': message.body
         }
         return message
-
-
-    def receive(self):
-        # this should never be called in the twilio workflow
-        return None
