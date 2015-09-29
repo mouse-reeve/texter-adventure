@@ -1,6 +1,5 @@
-''' Runs a ``dashboard app for texter adventures '''
+''' Runs a dashboard web app for texter adventures '''
 from flask import Flask, make_response, request
-from flask.ext.sqlalchemy import SQLAlchemy
 import json
 import logging
 from sqlalchemy.orm.exc import NoResultFound
@@ -12,72 +11,82 @@ from IO import TwilioIO
 # CONFIG
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://localhost/texter_dev'
-db = SQLAlchemy(app)
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 
 import models
+from models import Player
+
+models.db.init_app(app)
 
 GAME = Gameplay()
 TWILIO = TwilioIO()
 DELAY = 1
 
-# ROUTES
+
+# TEMPLATE
+
 @app.route('/')
 def index():
     ''' renders the start page '''
     return make_response(open('index.html').read())
 
 
-@app.route('/api/start/<name>/<phone_number>', methods=['GET'])
-def start_game(name, phone_number):
-    ''' gets the very beginning of a new game '''
-    # lookup or create new player
+# UTIL
+
+def failure(error):
+    ''' formats a failure response '''
+    return json.dumps({'success': False, 'data': {'error': error}})
+
+
+def success(data):
+    ''' formats a success response '''
+    return json.dumps({'success': True, 'data': data})
+
+
+# API
+
+@app.route('/api/player', methods=['POST'])
+def add_player():
+    ''' create a new entry in the player table '''
+    data = request.get_json()
     try:
-        player = find_player(phone_number)
-    except NoResultFound:
-        player = models.Player(name, int(phone_number))
-        player.show = True
-        db.session.add(player)
-        db.session.commit()
+        player = models.add_player(data['name'], data['phone'])
+    except KeyError:
+        return failure('name or phone number not found')
 
     turn = GAME.start(player.name)
-    player.current_turn = turn
-    db.session.commit()
-    return json.dumps(turn)
+    player.set_pending_turn(turn)
+    return success({})
 
 
-@app.route('/api/send/<phone_number>', methods=['POST'])
-def send_turn(phone_number):
+@app.route('/api/message/<phone>', methods=['POST'])
+def send_turn(phone):
     ''' manually send a turn, if necessary '''
     turn_data = request.get_json()
     try:
-        player = find_player(phone_number)
+        player = models.find_player(phone)
     except NoResultFound:
-        return False
+        return failure('no player found with that phone number')
 
-    queue = []
     # send a turn
+    queue = []
     for text in turn_data['text']:
         logging.info('sending message: %s', text)
-        try:
-            queue.append(TWILIO.send(text, '+%s' % player.phone))
-            time.sleep(DELAY)
-        except Exception as e:
-            logging.error('Twilio error %s', e)
-            return json.dumps({'success': False, 'error': e.status})
+        sms = TWILIO.send(text, '+%s' % player.phone)
+        queue.append(sms)
+        time.sleep(DELAY)
+
+        models.add_message(player, turn_data, sms)
 
     if 'options' in turn_data and len(turn_data['options']):
         options_text = GAME.format_options(turn_data, player.name)
         logging.info('sending message: %s', options_text)
-        try:
-            queue.append(TWILIO.send(options_text, '+%s' % player.phone))
-            time.sleep(DELAY)
-        except Exception as e:
-            logging.error('Twilio error %s', e)
-            return json.dumps({'success': False, 'error': e.status})
+        queue.append(TWILIO.send(options_text, '+%s' % player.phone))
+        time.sleep(DELAY)
 
-    update_turn_log(player, turn_data)
+        models.add_message(player, turn_data, sms)
 
-    return json.dumps(queue)
+    return success(queue)
 
 
 @app.route('/api/respond', methods=['POST'])
@@ -85,91 +94,66 @@ def respond():
     ''' receives a reply from twilio '''
     sms = request.values.to_dict()
     phone = sms['From'].replace('+', '')
+
     try:
-        player = find_player(phone)
+        player = models.find_player(phone)
     except NoResultFound:
         # contact from an unknown number
-        player = models.Player(None, phone)
-        player.show = True
-        player.current_turn = {'text': ['Pardon me, but what name do you go by?'], 'uid': None}
-        db.session.add(player)
-        db.session.commit()
-        return json.dumps(player.current_turn)
+        player = models.add_player(None, phone)
+        player.toggle_show()
+
+        turn_data = {'text': ['Pardon me, but what name do you go by?'], 'uid': None}
+        player.set_pending_turn(turn_data)
+        return success(player.pending_turn)
     else:
-        turn_data = player.current_turn
-        update_turn_log(player, sms, response=True)
+        # TODO: this is maybe the wrong way to get this
+        previous_turn = player.pending_turn
 
-        turn = GAME.process_response(turn_data, sms['Body'], player.name)
-        player.current_turn = turn
-        db.session.commit()
-        return json.dumps(turn)
+        turn = GAME.process_response(previous_turn, sms['Body'], player.name)
+        player.set_pending_turn(turn)
+
+        models.add_message(player, {'text': sms['Body']}, sms, incoming=True)
+
+        return success(turn)
 
 
-@app.route('/api/games', methods=['GET'])
+@app.route('/api/player', methods=['GET'])
 def get_games():
     ''' gets all game data '''
-    players = db.session.query(models.Player).all()
-    games = [
-        {
-            'turn_history': p.turn_history,
-            'current_turn': p.current_turn,
-            'name': p.name,
-            'phone': p.phone,
-            'show': p.show,
-            'start_time': p.start_time.isoformat(),
-        } for p in players if p.show]
-    return json.dumps(games)
+    players = models.db.session.query(Player).all()
+    return success(players)
 
 
-@app.route('/api/history/<phone_number>', methods=['GET'])
-def get_history(phone_number):
+@app.route('/api/player/<phone>', methods=['GET'])
+def get_history(phone):
     ''' gets the history of a single game '''
-    player = find_player(phone_number)
+    player = models.find_player(phone)
     return json.dumps(player.turn_history)
 
 
-@app.route('/api/visibility/<phone_number>', methods=['PUT'])
-def toggle_visibilty(phone_number):
+@app.route('/api/player/<phone>', methods=['PUT'])
+def update_player(phone):
     ''' show or hide a game '''
-    player = find_player(phone_number)
-    player.show = not player.show
-    db.session.commit()
-    return json.dumps({'visiblity': player.show})
+    data = request.get_json()
+    player = models.find_player(phone)
+
+    for key, value in data.iteritems():
+        player[key] = value
+    player.save()
+    return player
 
 
-@app.route('/api/name/<phone_number>/<name>', methods=['PUT'])
-def set_name(phone_number, name):
-    player = find_player(phone_number)
-    player.name = name
-    db.session.commit()
-    return json.dumps({'success': True})
-
-
-@app.route('/api/uid/<phone_number>/<uid>', methods=['PUT'])
-def set_current_turn(uid, phone_number):
-    player = find_player(phone_number)
+@app.route('/api/player/<phone>/<uid>', methods=['PUT'])
+def set_current_turn(uid, phone):
+    ''' shift the current pending turn to a given uid '''
+    player = models.find_player(phone)
     turn = GAME.get_turn(uid, player.name)
-    player.current_turn = turn
-    db.session.commit()
+    player.set_pending_turn(turn)
     return json.dumps(turn)
 
 
-def find_player(phone_number):
-    ''' looks up a player by phone number '''
-    return db.session.query(models.Player).filter(models.Player.phone == phone_number).one()
+# DB INTERACTION
 
-
-def update_turn_log(player, turn_data, response=False):
-    ''' Adds turn data to db '''
-    turn_type = 'response'
-    if not response:
-        turn_type = 'turn'
-        player.current_turn = turn_data
-    history = player.turn_history[:]
-    history.append({'type': turn_type, 'content': turn_data})
-    player.turn_history = history
-    player.show = True
-    db.session.commit()
 
 if __name__ == '__main__':
     app.debug = True
