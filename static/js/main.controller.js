@@ -91,7 +91,7 @@ function MainController($scope, Game) {
             console.log($scope.games);
 
             angular.forEach($scope.games, function(game) {
-                if (game.messages.length && game.messages[game.messages.length - 1].type == 'turn') {
+                if (game.messages.length && !game.messages[game.messages.length - 1].incoming) {
                     $scope.state[game.phone] = 'respond';
                 } else {
                     $scope.state[game.phone] = 'approve';

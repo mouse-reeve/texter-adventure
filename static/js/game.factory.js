@@ -13,7 +13,7 @@ angular.module('gameFactory', []).factory('Game', function($http) {
         },
 
         sendTurn: function(turnData, phone) {
-            return $http.post('/api/send/' + phone, turnData).then(function(response) {
+            return $http.post('/api/message/' + phone, turnData).then(function(response) {
                 return response.data.data;
             });
         },
@@ -38,14 +38,6 @@ angular.module('gameFactory', []).factory('Game', function($http) {
 
         hide: function(phone) {
             return $http.put('/api/visibility/' + phone);
-        },
-
-        // for test only
-        sendResponse: function(option, phone) {
-            var smsData = {'Body': option, 'From': phone};
-            return $http.post('/api/respond', smsData).then(function(response) {
-                return response.data.data;
-            });
-        },
+        }
     };
 });

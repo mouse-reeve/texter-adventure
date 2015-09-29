@@ -17,7 +17,7 @@ class Player(db.Model):
     show = db.Column(db.Boolean, default=False)
     notes = db.Column(db.Text)
     pending_turn = db.Column(JSON)
-    messages = db.relationship('Message', backref='Player', lazy='dynamic')
+    messages = db.relationship('Message', backref='player', lazy='dynamic')
 
     def __init__(self, name, number):
         self.name = name
@@ -90,7 +90,7 @@ class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     created = db.Column(db.DateTime, server_default=db.func.now())
     updated = db.Column(db.DateTime, server_default=db.func.now(), onupdate=db.func.now())
-    player = db.Column(db.Integer, db.ForeignKey('player.id'))
+    player_id = db.Column(db.Integer, db.ForeignKey('player.id'))
     sms_data = db.Column(JSON)
     turn_data = db.Column(JSON)
     text = db.Column(db.Text)
@@ -108,6 +108,7 @@ class Message(db.Model):
         data = {
             'created': self.created.isoformat(),
             'turn_data': self.turn_data,
+            'text': self.text,
             'incoming': self.incoming
         }
         return data
@@ -115,7 +116,8 @@ class Message(db.Model):
 
 def add_message(player, turn_data, sms, incoming=False):
     ''' log a turn in the database '''
-    message = Message(player.id, turn_data, sms, incoming)
+    message = Message(player, sms, turn_data, incoming)
+    message.text = sms['body']
     db.session.add(message)
     db.session.commit()
     return message

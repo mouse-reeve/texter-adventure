@@ -7,21 +7,13 @@
             {{game.name}}, {{game.phone}} --- <button ng-click="hideGame(game)">hide</button>
         </header>
         <div class="history">
-            <div ng-repeat="historical_turn in game.turn_history" class="card {{ historical_turn.type }}">
-                <div ng-if="historical_turn.type == 'turn'">
+            <div ng-repeat="historical_turn in game.messages" class="card {{ historical_turn.type }}">
+                <div ng-if="!historical_turn.incoming">
                     <div class="text">
-                        <p ng-repeat="text in historical_turn.content.text track by $index">{{ text }}</p>
-                    </div>
-                    <div class="text" ng-if="historical_turn.content.options">
-                        <p>{{ historical_turn.content.prompt }}</p>
-                        <ol>
-                            <li ng-repeat="option in historical_turn.content.options track by $index">
-                                {{ option['text'] }}
-                            </li>
-                        </ol>
+                        <p>{{ historical_turn.text }}</p>
                     </div>
                 </div>
-                <div ng-if="historical_turn.type != 'turn'">
+                <div ng-if="historical_turn.incoming">
                     <div class="text">
                         <p>{{ historical_turn.content.Body }}</p>
                     </div>

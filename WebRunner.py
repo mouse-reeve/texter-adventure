@@ -68,7 +68,7 @@ def start_game():
 
 @app.route('/api/message/<phone>', methods=['POST'])
 def send_turn(phone):
-    ''' manually send a turn, if necessary '''
+    ''' manually send a turn '''
     turn_data = request.get_json()
     try:
         player = models.find_player(phone)
@@ -88,7 +88,8 @@ def send_turn(phone):
     if 'options' in turn_data and len(turn_data['options']):
         options_text = GAME.format_options(turn_data, player.name)
         logging.info('sending message: %s', options_text)
-        queue.append(TWILIO.send(options_text, '+%s' % player.phone))
+        sms = TWILIO.send(options_text, '+%s' % player.phone)
+        queue.append(sms)
         time.sleep(DELAY)
 
         models.add_message(player, turn_data, sms)
