@@ -28,12 +28,8 @@ class Player(db.Model):
         messages = self.messages
 
         message_data = []
-        try:
-            for message in messages:
-                message_data.append(message.serialize())
-        except Exception as e:
-            import pdb;pdb.set_trace()
-            pass
+        for message in messages:
+            message_data.append(message.serialize())
 
         data = {
             'created': self.created.isoformat(),
@@ -81,6 +77,10 @@ def find_player(phone):
 def get_uncontacted_player():
     ''' get an uncontacted player '''
     return db.session.query(Player).filter(Player.contacted == False).first()
+
+def get_visible_players():
+    ''' get all players marked as visible '''
+    return db.session.query(Player).filter(Player.show == True).all()
 
 def add_player(name, phone):
     ''' add a new player '''

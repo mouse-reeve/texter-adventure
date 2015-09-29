@@ -131,7 +131,7 @@ def respond():
 @app.route('/api/player', methods=['GET'])
 def get_games():
     ''' gets all game data '''
-    players = models.db.session.query(Player).all()
+    players = models.get_visible_players()
     data = []
     for player in players:
         data.append(player.serialize())
