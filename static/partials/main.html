@@ -7,15 +7,10 @@
             {{game.name}}, {{game.phone}} --- <button ng-click="hideGame(game)">hide</button>
         </header>
         <div class="history">
-            <div ng-repeat="historical_turn in game.messages" class="card {{ historical_turn.type }}">
-                <div ng-if="!historical_turn.incoming">
+            <div ng-repeat="historical_turn in game.messages" class="card" ng-class="{'response': historical_turn.incoming}">
+                <div>
                     <div class="text">
                         <p><pre>{{ historical_turn.text }}</pre></p>
-                    </div>
-                </div>
-                <div ng-if="historical_turn.incoming">
-                    <div class="text">
-                        <p><pre>{{ historical_turn.content.Body }}</pre></p>
                     </div>
                 </div>
             </div>

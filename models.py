@@ -117,7 +117,7 @@ class Message(db.Model):
 def add_message(player, turn_data, sms, incoming=False):
     ''' log a turn in the database '''
     message = Message(player, sms, turn_data, incoming)
-    message.text = sms['body']
+    message.text = sms['body'] if 'body' in sms else sms['Body']
     db.session.add(message)
     db.session.commit()
     return message
