@@ -94,3 +94,7 @@ ol {
 .error {
     background: #ff6666;
 }
+
+pre {
+    white-space: pre-wrap;
+}

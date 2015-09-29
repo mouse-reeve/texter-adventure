@@ -10,12 +10,12 @@
             <div ng-repeat="historical_turn in game.messages" class="card {{ historical_turn.type }}">
                 <div ng-if="!historical_turn.incoming">
                     <div class="text">
-                        <p>{{ historical_turn.text }}</p>
+                        <p><pre>{{ historical_turn.text }}</pre></p>
                     </div>
                 </div>
                 <div ng-if="historical_turn.incoming">
                     <div class="text">
-                        <p>{{ historical_turn.content.Body }}</p>
+                        <p><pre>{{ historical_turn.content.Body }}</pre></p>
                     </div>
                 </div>
             </div>
