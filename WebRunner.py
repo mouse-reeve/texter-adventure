@@ -37,7 +37,7 @@ def failure(error):
     return json.dumps({'success': False, 'data': {'error': error}})
 
 
-def success(data):
+def success(data=None):
     ''' formats a success response '''
     return json.dumps({'success': True, 'data': data})
 
@@ -55,7 +55,7 @@ def add_player():
 
     turn = GAME.start(player.name)
     player.set_pending_turn(turn)
-    return success({})
+    return success()
 
 @app.route('/api/player/new', methods=['GET'])
 def start_game():
@@ -65,7 +65,7 @@ def start_game():
         player.set_show(True)
     else:
         return failure('no available players')
-    return success({})
+    return success()
 
 
 @app.route('/api/message/<phone>', methods=['POST'])
@@ -154,12 +154,11 @@ def update_player(phone):
     player = models.find_player(phone)
 
     if 'name' in data:
-        player.name = data['name']
+        player.set_name(data['name'])
     if 'show' in data:
-        player.show = data['show']
+        player.set_show(data['show'])
     if 'notes' in data:
-        player.notes = data['notes']
-    player.save()
+        player.set_notes(data['notes'])
     return success(player.serialize())
 
 

@@ -43,16 +43,11 @@ class Player(db.Model):
         return data
 
 
-    def save(self):
-        ''' add a new player '''
-        db.session.add(self)
-        db.session.commit()
-        return self
-
     def set_pending_turn(self, turn_data):
         ''' set the pending turn in the database '''
         self.pending_turn = turn_data
-        self.save()
+        db.session.add(self)
+        db.session.commit()
         return self
 
 
@@ -68,6 +63,17 @@ class Player(db.Model):
         db.session.commit()
         return self
 
+    def set_name(self, name):
+        ''' player name setter '''
+        self.name = name
+        db.session.commit()
+        return self
+
+    def set_notes(self, notes):
+        ''' notes setter '''
+        self.notes = notes
+        db.session.commit()
+        return self
 
 def find_player(phone):
     ''' looks up a player by phone number '''
@@ -119,6 +125,12 @@ class Message(db.Model):
         }
         return data
 
+    def set_sms(self, sms_data):
+        ''' set sms data '''
+        self.sms_data = sms_data
+        db.session.commit()
+        return self
+
 
 def add_message(player, turn_data, sms, incoming=False):
     ''' log a turn in the database '''
@@ -127,4 +139,3 @@ def add_message(player, turn_data, sms, incoming=False):
     db.session.add(message)
     db.session.commit()
     return message
-

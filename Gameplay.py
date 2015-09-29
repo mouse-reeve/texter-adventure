@@ -108,7 +108,6 @@ class Gameplay(object):
 def clean_response(text):
     ''' basic cleanup to guess what a player may have meant '''
     data = {'valid': False, 'original': text, 'response_id': None}
-
     text = re.sub(r'\(|\)|\.', '', text)
 
     # Check for simple numerical response
