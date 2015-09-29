@@ -7,7 +7,7 @@ function MainController($scope, Game) {
     $scope.startNew = {};
 
     $scope.newGame = function() {
-        Game.startNewGame($scope.startNew.name, $scope.startNew.phone).then(function(turn) {
+        Game.startNewGame().then(function(turn) {
             $scope.state[$scope.startNew.phone] = 'approve';
             $scope.startNew = {};
             $scope.updateHistory();
@@ -88,15 +88,16 @@ function MainController($scope, Game) {
     $scope.updateHistory = function(phone) {
         Game.getGames().then(function(data) {
             $scope.games = data;
+            console.log($scope.games);
 
             angular.forEach($scope.games, function(game) {
-                if (game.turn_history.length && game.turn_history[game.turn_history.length - 1].type == 'turn') {
+                if (game.messages.length && game.messages[game.messages.length - 1].type == 'turn') {
                     $scope.state[game.phone] = 'respond';
                 } else {
                     $scope.state[game.phone] = 'approve';
                 }
 
-                $scope.turn[game.phone] = game.current_turn;
+                $scope.turn[game.phone] = game.pending_turn;
             });
         });
     };

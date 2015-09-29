@@ -23,8 +23,28 @@ class Player(db.Model):
         self.name = name
         self.phone = number
 
-    def __repr__(self):
-        return '<id {}>'.format(self.id)
+    def serialize(self):
+        ''' make it json-able '''
+        messages = self.messages
+
+        message_data = []
+        try:
+            for message in messages:
+                message_data.append(message.serialize())
+        except:
+            pass
+
+        data = {
+            'created': self.created.isoformat(),
+            'name': self.name,
+            'phone': self.phone,
+            'notes': self.notes if self.notes else '',
+            'pending_turn': self.pending_turn,
+            'show': self.show,
+            'messages': message_data
+        }
+        return data
+
 
     def save(self):
         ''' add a new player '''
@@ -52,6 +72,10 @@ def find_player(phone):
     return db.session.query(Player).filter(Player.phone == phone).one()
 
 
+def get_uncontacted_player():
+    ''' get an uncontacted player '''
+    return db.session.query(Player).filter(Player.contacted == False).one()
+
 def add_player(name, phone):
     ''' add a new player '''
     player = Player(name, phone)
@@ -78,8 +102,15 @@ class Message(db.Model):
         self.turn_data = turn_data
         self.incoming = incoming
 
-    def __repr__(self):
-        return '<id {}>'.format(self.id)
+
+    def serialize(self):
+        ''' make it json-able '''
+        data = {
+            'created': self.created.isoformat(),
+            'turn_data': self.turn_data,
+            'incoming': self.incoming
+        }
+        return data
 
 
 def add_message(player, turn_data, sms, incoming=False):

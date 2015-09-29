@@ -1,9 +1,8 @@
 <header>
     {{ games.length }} running. <button ng-click="updateHistory()">reload</button>
 </header>
-
 <div>
-    <div class="game" ng-repeat="game in games | orderBy:'start_time':-1" ng-if="game.show">
+    <div class="game" ng-repeat="game in games | orderBy:'created':-1" ng-if="game.show">
         <header class="title" ng-class="smsError(game.phone)">
             {{game.name}}, {{game.phone}} --- <button ng-click="hideGame(game)">hide</button>
         </header>
@@ -88,10 +87,6 @@
         </div>
 
         <div class="start-game">
-            <form>
-                <label>Name <input type="text" ng-model="startNew.name"></label>
-                <label>Phone <input type="text" ng-model="startNew.phone"></label>
-                <button ng-click="newGame()" ng-disabled="!startNew.name || !startNew.phone">Start new game</button>
-            </form>
+            <button ng-click="newGame()">Start new game</button>
         </div>
     </div>

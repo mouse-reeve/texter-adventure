@@ -58,6 +58,13 @@ def add_player():
     player.set_pending_turn(turn)
     return success({})
 
+@app.route('/api/player/new', methods=['GET'])
+def start_game():
+    ''' load a game '''
+    player = models.get_uncontacted_player()
+    player.toggle_show()
+    return success({})
+
 
 @app.route('/api/message/<phone>', methods=['POST'])
 def send_turn(phone):
@@ -121,14 +128,17 @@ def respond():
 def get_games():
     ''' gets all game data '''
     players = models.db.session.query(Player).all()
-    return success(players)
+    data = []
+    for player in players:
+        data.append(player.serialize())
+    return success(data)
 
 
 @app.route('/api/player/<phone>', methods=['GET'])
 def get_history(phone):
     ''' gets the history of a single game '''
     player = models.find_player(phone)
-    return json.dumps(player.turn_history)
+    return success(player)
 
 
 @app.route('/api/player/<phone>', methods=['PUT'])
