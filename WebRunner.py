@@ -62,7 +62,7 @@ def add_player():
 def start_game():
     ''' load a game '''
     player = models.get_uncontacted_player()
-    player.toggle_show()
+    player.set_show(True)
     return success({})
 
 
@@ -74,6 +74,8 @@ def send_turn(phone):
         player = models.find_player(phone)
     except NoResultFound:
         return failure('no player found with that phone number')
+
+    player = player.set_contacted(True)
 
     # send a turn
     queue = []
@@ -108,12 +110,13 @@ def respond():
     except NoResultFound:
         # contact from an unknown number
         player = models.add_player(None, phone)
-        player.toggle_show()
 
         turn_data = {'text': ['Pardon me, but what name do you go by?'], 'uid': None}
         player.set_pending_turn(turn_data)
         return success(player.pending_turn)
     else:
+        player.set_show(True)
+
         # TODO: this is maybe the wrong way to get this
         previous_turn = player.pending_turn
 
@@ -139,7 +142,7 @@ def get_games():
 def get_history(phone):
     ''' gets the history of a single game '''
     player = models.find_player(phone)
-    return success(player)
+    return success(player.serialize())
 
 
 @app.route('/api/player/<phone>', methods=['PUT'])
@@ -148,10 +151,14 @@ def update_player(phone):
     data = request.get_json()
     player = models.find_player(phone)
 
-    for key, value in data.iteritems():
-        player[key] = value
+    if 'name' in data:
+        player.name = data['name']
+    if 'show' in data:
+        player.show = data['show']
+    if 'notes' in data:
+        player.notes = data['notes']
     player.save()
-    return player
+    return success(player.serialize())
 
 
 @app.route('/api/player/<phone>/<uid>', methods=['PUT'])

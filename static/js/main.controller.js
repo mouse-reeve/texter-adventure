@@ -42,20 +42,20 @@ function MainController($scope, Game) {
     };
 
     $scope.setName = function(game) {
-        Game.setName(game.newName, game.phone).then(function() {
+        Game.update(game.phone, {'name': game.newName}).then(function() {
             game.name = game.newName;
         });
     };
 
-    $scope.setUID = function(game) {
-        Game.setUID(game.newUID, game.phone).then(function() {
+    $scope.setUID = function(game, uid) {
+        Game.setUID(uid, game.phone).then(function() {
             $scope.updateHistory();
         });
     };
 
     $scope.hideGame = function(game) {
         game.show = false;
-        Game.hide(game.phone);
+        Game.update(game.phone, {'show': false});
     };
 
     $scope.removeOptions = function(phone) {

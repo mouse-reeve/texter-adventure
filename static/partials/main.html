@@ -57,10 +57,10 @@
             <p ng-click="game.showAdvanced = !game.showAdvanced">Show advanced</p>
             <div class="card" ng-show="game.showAdvanced">
                 <ul>
-                    <li><button ng-click="restart(game)">Restart at turn 1</button></li>
+                    <li><button ng-click="setUID(game, 0)">Restart at turn 1</button></li>
                     <li>
                         <label>Set guess to uid <input ng-model="game.newUID"></input></label>
-                        <button ng-click="setUID(game)">Set</button>
+                        <button ng-click="setUID(game, game.newUID)">Set</button>
                     </li>
                     <li ng-if="turn[game.phone].options">
                         <button ng-click="removeOptions(game.phone)">Remove options</button>

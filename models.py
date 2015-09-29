@@ -31,7 +31,8 @@ class Player(db.Model):
         try:
             for message in messages:
                 message_data.append(message.serialize())
-        except:
+        except Exception as e:
+            import pdb;pdb.set_trace()
             pass
 
         data = {
@@ -52,7 +53,6 @@ class Player(db.Model):
         db.session.commit()
         return self
 
-
     def set_pending_turn(self, turn_data):
         ''' set the pending turn in the database '''
         self.pending_turn = turn_data
@@ -60,9 +60,15 @@ class Player(db.Model):
         return self
 
 
-    def toggle_show(self):
+    def set_show(self, show):
         ''' show or hide a player '''
-        self.show = not self.show
+        self.show = show
+        db.session.commit()
+        return self
+
+    def set_contacted(self, contacted):
+        ''' sets player contacted field '''
+        self.contacted = contacted
         db.session.commit()
         return self
 
@@ -74,7 +80,7 @@ def find_player(phone):
 
 def get_uncontacted_player():
     ''' get an uncontacted player '''
-    return db.session.query(Player).filter(Player.contacted == False).one()
+    return db.session.query(Player).filter(Player.contacted == False).first()
 
 def add_player(name, phone):
     ''' add a new player '''

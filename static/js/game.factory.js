@@ -25,19 +25,15 @@ angular.module('gameFactory', []).factory('Game', function($http) {
         },
 
         setUID: function(uid, phone){
-            return $http.put('/api/uid/' + phone + '/' + uid).then(function(response) {
+            return $http.put('/api/player/' + phone + '/' + uid).then(function(response) {
                 return response.data.data;
             });
         },
 
-        setName: function(name, phone) {
-            return $http.put('/api/name/' + phone + '/' + name).then(function(response) {
+        update: function(phone, changedData) {
+            return $http.put('/api/player/' + phone, changedData).then(function(response) {
                 return response.data.data;
             });
         },
-
-        hide: function(phone) {
-            return $http.put('/api/visibility/' + phone);
-        }
     };
 });
