@@ -61,7 +61,10 @@ def add_player():
 def start_game():
     ''' load a game '''
     player = models.get_uncontacted_player()
-    player.set_show(True)
+    if player:
+        player.set_show(True)
+    else:
+        return failure('no available players')
     return success({})
 
 
