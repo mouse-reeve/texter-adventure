@@ -4,12 +4,9 @@ function MainController($scope, Game) {
     $scope.turn = [];
     $scope.error = [];
 
-    $scope.startNew = {};
-
     $scope.newGame = function() {
         Game.startNewGame().then(function(turn) {
             $scope.state[$scope.startNew.phone] = 'approve';
-            $scope.startNew = {};
             $scope.updateHistory();
         });
     };

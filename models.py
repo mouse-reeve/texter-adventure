@@ -1,6 +1,9 @@
 ''' Defines a postgres model to store game data '''
 from flask.ext.sqlalchemy import SQLAlchemy
 from sqlalchemy.dialects.postgresql import JSON
+from sqlalchemy.orm import validates
+
+import re
 
 db = SQLAlchemy()
 
@@ -22,6 +25,11 @@ class Player(db.Model):
     def __init__(self, name, number):
         self.name = name
         self.phone = number
+
+    @validates('phone')
+    def validate_phone(self, key, phone):
+        ''' phone numbers should be 11 numeral digits '''
+        assert re.match(r'^\d{11}$', phone)
 
     def serialize(self):
         ''' make it json-able '''
@@ -74,6 +82,7 @@ class Player(db.Model):
         self.notes = notes
         db.session.commit()
         return self
+
 
 def find_player(phone):
     ''' looks up a player by phone number '''

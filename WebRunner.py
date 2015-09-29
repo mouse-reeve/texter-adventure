@@ -52,6 +52,8 @@ def add_player():
         player = models.add_player(data['name'], data['phone'])
     except KeyError:
         return failure('name or phone number not found')
+    except AssertionError:
+        return failure('invalid data')
 
     turn = GAME.start(player.name)
     player.set_pending_turn(turn)
